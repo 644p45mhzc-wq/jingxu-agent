@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>竞序 · 竞赛备赛工作台</title>
+  <meta name="description" content="查看竞赛资料，制定专属备赛计划。">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css?v=20261030-ux-1">
+  <link rel="stylesheet" href="/static/calendar.css?v=20261030-ux-1">
+  <script src="/static/profile-store.js" defer></script>
+  <script src="/static/workspace-data.js?v=20261030-ux-1" defer></script>
+  <script src="/static/plan-calendar.js?v=20261030-ux-1" defer></script>
+  <script src="/static/growth-memory.js?v=20261030-ux-1" defer></script>
+  <script src="/static/week-focus.js?v=20261030-ux-1" defer></script>
+  <script src="/static/contest-library.js?v=20261030-ux-1" defer></script>
+  <script src="/static/app-navigation.js?v=20261030-ux-1" defer></script>
+  <script src="/static/app.js?v=20261030-ux-1" defer></script>
+</head>
+<body class="detail-page">
+<aside class="sidebar" id="app-sidebar"></aside>
+<main id="workspace">
+  <a class="back-link" href="/">← 浏览竞赛</a><header><div><span class="eyebrow">YOUR COMPETITION WORKSPACE</span><h1>你的备赛工作台</h1><p>按周推进，逐项完成。</p></div><div class="workspace-header-actions"><span id="status" class="status">正在连接服务</span><button type="button" class="secondary" id="coach-toggle" aria-expanded="false" aria-controls="coach-panel">AI 教练</button></div></header>
+  <section class="contest-card"><div class="contest-top"><span class="tag" id="contest-short">竞赛备赛空间</span><a id="contest-source" target="_blank" rel="noopener noreferrer">官方入口 ↗</a></div><span id="side-contest" hidden></span><span id="side-tags" hidden></span><h2 id="contest-title">正在载入竞赛…</h2><div class="contest-foot" id="contest-tags"></div><div id="contest-library-actions"></div><p id="library-status" role="status" aria-live="polite"></p><a class="quiet" href="/#my-contests">查看收藏 ↗</a></section>
+  <nav class="workspace-tabs" aria-label="比赛内导航"><a href="#plan" data-workspace-tab="plan">计划</a><a href="#plan-calendar" data-workspace-tab="calendar">日历</a><a href="#submission-panel" data-workspace-tab="review">每周验收</a><a href="#resources" data-workspace-tab="resources">资料</a><a href="#growth-memory" class="daily-shortcut" data-workspace-tab="daily">记录今日进度 ↗</a></nav>
+  <div class="workspace-grid">
+    <div class="main-column">
+      
+      <section class="scope-note" id="contest-scope"></section>
+      <section class="panel" id="plan-calendar" data-contest="current"></section>
+      <section class="panel" id="week-focus"><div class="section-heading"><h2>本周待办</h2><a href="#plan">完整计划 ↓</a></div><p class="quiet">优先处理逾期与本周任务，最多显示 3 项。</p><div id="week-focus-list"><p class="quiet">生成计划后，在这里查看下一步。</p></div></section><section class="panel" id="plan"><div class="section-heading"><div><span class="eyebrow">PREPARATION PLAN</span><h2>我的备赛计划</h2></div><button id="export" class="text-button" disabled>导出计划</button></div><div class="plan-setup"><a class="profile-edit" href="/#profile">修改首页画像</a><p id="profile-summary"></p><p id="schedule-summary" class="quiet"></p><div class="budget-controls"><label for="training-weeks">备赛周期（周）</label><input id="training-weeks" type="number" min="1" max="12" step="1" required><p class="quiet">1—12周。修改周数后点击生成计划或使用模板；新计划先预览，应用后旧版自动归档。</p></div><div class="budget-controls"><label for="weekly-hours">每周可投入时间（小时）</label><input id="weekly-hours" type="number" min="1" max="40" step="0.5" required><p class="quiet">1—40小时，计划按预算安排。</p></div><label class="growth-toggle"><input id="use-growth-memory" type="checkbox" checked> 生成计划时参考跨竞赛成长记录</label><p class="quiet">根据近期真实投入调整训练强度，适用摘要会随计划展示。可取消勾选。</p><div class="form-actions"><button class="primary" id="generate" type="button">生成计划</button><button class="secondary" id="template" type="button">使用模板</button><button class="secondary" id="cancel-generation" type="button" hidden>停止生成</button><button class="secondary" id="retry-plan" type="button" hidden>重试生成</button></div></div><details id="adjust-panel" class="adjust-panel" hidden><summary>调整未完成任务</summary><p class="quiet">按上方时间预算重新排期，已完成任务的内容、工时和日期保持不变。任务过长时会分段安排。</p><label for="adjust-start">重新安排的开始日期</label><input id="adjust-start" type="date" required><button id="preview-adjust" type="button" class="secondary">预览调整</button><div id="adjust-preview" hidden aria-live="polite"></div></details><div id="generation-preview" hidden aria-live="polite"></div><details class="resource-fold" id="plan-versions" hidden><summary>历史计划版本 · 可恢复</summary><div id="version-list"></div></details><div id="plan-content"><div class="empty"><span>▤</span><h3>把目标拆成下一步</h3><p>在首页保存画像后，即可生成每周任务、交付物和学习资源。</p><p class="quiet">个人训练时间线与官方赛程独立。</p></div></div></section>
+      <section class="panel" id="growth-memory"></section>
+      <section class="panel" id="submission-panel">
+        <div class="section-heading"><div><span class="eyebrow">LEARN · SUBMIT · IMPROVE</span><h2>每周验收，明确下一步</h2></div></div>
+        <p class="quiet">选一周 → 一次提交本周全部成果 → 获得整体评价 → 应用本周反馈。自我勾选完成与 AI 验收分别记录。</p>
+        <form id="submission-form">
+          <label for="submission-task">选择待验收周次</label><select id="submission-task" required><option value="">生成计划后选择一周</option></select>
+          <p id="submission-standard" class="quiet"></p>
+          <label for="submission-text">本周成果与验证记录</label><button id="collect-week-logs" class="secondary" type="button">汇总本周每日记录</button><p class="quiet">汇总后可继续补充文件片段、代码和验证结果，再提交整周验收。</p>
+          <textarea id="submission-text" rows="9" minlength="20" maxlength="12000" required placeholder="一次提交本周所有任务的成果，可按“成果一、成果二、成果三”组织。说明实际结果、验证方法和未解决的问题。只有链接或“已完成”不足以验收。"></textarea>
+          <label for="submission-file" class="quiet">也可导入文本成果（最多 12,000 字符）</label><input id="submission-file" type="file" accept=".txt,.md,.py,.json,.csv,.js,.c,.cpp">
+          <p class="quiet">评价只依据提交文本，不会打开链接或运行代码。提交内容、画像和本周任务会发送给 DeepSeek；记录保存在本浏览器。</p>
+          <div class="form-actions"><button id="submit-review" class="primary" type="submit">提交本周成果并评价</button><button id="cancel-review" class="secondary" type="button" hidden>停止评价</button></div>
+        </form>
+        <p id="review-status" role="status" aria-live="polite"></p>
+        <div id="review-feedback" aria-live="polite"></div>
+        <details class="resource-fold"><summary>成果与评价记录</summary><div id="review-history"><p class="quiet">还没有成果记录。</p></div></details>
+      </section>
+    </div>
+    <div class="right-column">
+      <section class="panel chat-panel" id="coach-panel" hidden><div class="section-heading"><div><span class="eyebrow">YOUR AI COACH</span><h2>聊聊你的备赛</h2></div><div class="chat-tools"><span class="ai-badge">DeepSeek</span><button type="button" class="text-button" id="coach-close">收起</button><button type="button" class="text-button" id="clear-chat">清空聊天</button></div></div><div id="chat-log" class="chat-log" role="log" aria-live="polite"><div class="bubble assistant">你好，我是你的竞赛备赛助手。<br>聊选题、学习方法或当前卡点。</div></div><div class="suggestions"><button data-prompt="结合我的档案，分析我是否适合当前竞赛，以及最需要补齐的能力。">我适合参加吗？</button><button data-prompt="结合当前竞赛的交付物，我应该如何分配学习、实践和展示准备的时间？">如何分配学习时间？</button><button data-prompt="根据我目前的计划和任务进度，建议如何调整接下来的任务，不要修改已完成任务。">帮我调整进度</button></div><form id="chat-form"><label class="sr-only" for="message">发送给备赛助手</label><textarea id="message" rows="3" maxlength="4000" placeholder="例如：我还没有参赛经验，应该从哪开始？" required></textarea><div class="chat-footer"><span class="quiet">Enter 发送 · Shift + Enter 换行</span><button class="secondary" id="cancel-chat" type="button" hidden>停止回复</button><button class="primary" id="send" type="submit">发送</button></div></form><p class="quiet chat-note">聊天自动保存。回复会参考档案、对话和计划。</p></section>
+      <section class="panel" id="resources"><div class="section-heading"><div><span class="eyebrow">LEARNING RESOURCES</span><h2>备赛资料架</h2></div><span class="quiet">官方资料 · 国内平台</span></div><form id="resource-search-form" class="resource-search"><label for="resource-query">实时搜索资料</label><input id="resource-query" minlength="2" maxlength="150" placeholder="例如：文献综述、Python 数据分析" required><select id="resource-kind" aria-label="搜索类型"><option value="all">全部资料</option><option value="course">课程</option><option value="tutorial">教程</option><option value="paper">论文</option></select><button id="resource-search-button" class="secondary" type="submit">搜索</button></form><p id="resource-search-status" class="quiet" role="status"></p><div id="resource-search-results" class="resource-grid"></div><p class="quiet">搜索仅发送关键词，不发送个人档案。结果未逐项核验。</p><details open class="resource-fold"><summary>按阶段学习</summary><ol id="learning-path"></ol></details><details class="resource-fold"><summary>展开全部资料</summary><div id="resource-list" class="resource-grid"></div></details><p class="quiet">实时搜索与课程入口供查找，内容和开课信息以来源为准。</p></section>
+      <section class="panel schedule" id="official-schedule"><span class="eyebrow">OFFICIAL TIMELINE</span><h2>本竞赛关键节点</h2><p class="date-legend quiet">历史与公布节点分开标注；训练日期见计划。</p><details class="resource-fold"><summary>展开赛事节点与来源</summary><div id="timeline"></div></details><p class="quiet" id="pending-note"></p><a id="timeline-source" target="_blank" rel="noopener noreferrer">查看赛事入口 ↗</a><p class="quiet"><span id="verified-label">赛事资料核验：2026-10-09 · 人工维护</span></p></section>
+    </div>
+  </div><footer>竞序 / 从兴趣出发，让准备落地。<span>大学生竞赛备赛 MVP</span></footer>
+</main><div id="notice" role="status" aria-live="polite" hidden></div>
+<script src="/static/resource-search.js?v=20261030-ux-1" defer></script></body></html>
