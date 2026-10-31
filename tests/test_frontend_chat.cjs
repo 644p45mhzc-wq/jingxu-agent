@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
 const source=process.argv[2] || path.join(__dirname,'../frontend/app.js');
 const nodes=new Map(),store=new Map();
-function node(id){if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',innerHTML:'',hidden:false,disabled:false,children:[],handlers:{},classList:{add(){}},addEventListener(k,h){this.handlers[k]=h},appendChild(n){this.children.push(n)},remove(){this.removed=true},reportValidity:()=>true,scrollIntoView(){}});return nodes.get(id)}
+function node(id){if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',innerHTML:'',hidden:false,disabled:false,children:[],handlers:{},classList:{add(){}},addEventListener(k,h){this.handlers[k]=h},appendChild(n){this.children.push(n)},remove(){this.removed=true},setCustomValidity(text){this.validationMessage=text},reportValidity(){return !this.validationMessage},scrollIntoView(){}});return nodes.get(id)}
 const oldMessages=[{role:'user',content:'旧问题'},{role:'assistant',content:'**旧回答**'}];
 store.set('jingxu-v2-cumcm',JSON.stringify({plan:null,completed:{old:true},messages:oldMessages}));
 let mode='success',lastBody,storageFail=false;
@@ -23,17 +23,17 @@ assert.equal(lastBody.plan.weeks[11].tasks[0].id,'w11');
 assert.equal(lastBody.completed.w11,true);
 assert.equal(lastBody.messages.at(-1).content,'最后一周完成了，接下来怎么安排？');
 assert(JSON.stringify(lastBody.plan).length>4500);
-node('#training-weeks').value='4';node('#weekly-hours').value='2';
+node('#plan-start').value='2026-10-30';node('#plan-end').value='2026-11-26';node('#weekly-hours').value='2';
 let generationBody;
 const rememberedLogs=[{contest_id:'innovation',day:'2026-10-10',actual_hours:1,planned_hours:2,status:'partial',goal:'学习',progress:'完成基础',blocker:'缺练习',skills:'Python'}];
 sandbox.window.GrowthMemory={forPlanning:()=>rememberedLogs};
 sandbox.fetch=async(url,options)=>{
  assert(url.includes('/api/plan?mode=template'));
  generationBody=JSON.parse(options.body);
- return {ok:true,json:async()=>({contest_id:'cumcm',mode:'template',summary:'计划',schedule:{weeks:4,hours:2},weeks:Array.from({length:4},(_,i)=>({title:'第'+i+'周',start:'2026-10-30',end:'2026-11-05',tasks:[{id:'g'+i,title:'练习',deliverable:'提交成果',hours:2,resource_ids:[]}]}))})};
+ return {ok:true,json:async()=>({contest_id:'cumcm',mode:'template',summary:'计划',schedule:{weeks:4,hours:2,start:'2026-10-30',end:'2026-11-26'},weeks:Array.from({length:4},(_,i)=>({title:'第'+i+'周',start:'2026-10-30',end:'2026-11-05',tasks:[{id:'g'+i,title:'练习',deliverable:'提交成果',hours:2,resource_ids:[]}]}))})};
 };
 await vm.runInContext('generate("template")',sandbox);
-assert.equal(generationBody.training_weeks,4);
+assert.equal(generationBody.start_date,'2026-10-30');assert.equal(generationBody.end_date,'2026-11-26');assert.equal(generationBody.training_weeks,undefined);
 assert.deepEqual(generationBody.growth_logs,rememberedLogs);
 assert.equal(sandbox.window.GrowthMemory.forPlanning().length,1);
 assert.equal(generationBody.weekly_hours,2);
@@ -44,11 +44,11 @@ storageFail=true;node('#apply-generated').handlers.click();
 assert.equal(store.get('jingxu-v2-cumcm'),beforeApply);
 assert.equal(vm.runInContext('plan.weeks.length',sandbox),12);
 storageFail=false;node('#apply-generated').handlers.click();
-assert.equal(JSON.parse(store.get('jingxu-v2-cumcm')).trainingWeeks,4);
+assert.equal(JSON.parse(store.get('jingxu-v2-cumcm')).planStart,'2026-10-30');assert.equal(JSON.parse(store.get('jingxu-v2-cumcm')).planEnd,'2026-11-26');
 assert.equal(JSON.parse(store.get('jingxu-v2-cumcm')).versions.length,1);
 assert.equal(JSON.parse(store.get('jingxu-v2-cumcm')).versions[0].state.completed.w11,true);
-node('#training-weeks').value='1';vm.runInContext('restore()',sandbox);
-assert.equal(node('#training-weeks').value,4);
+node('#plan-end').value='2026-10-30';vm.runInContext('restore()',sandbox);
+assert.equal(node('#plan-start').value,'2026-10-30');assert.equal(node('#plan-end').value,'2026-11-26');
 node('#version-select').value=vm.runInContext('versions[0].id',sandbox);
 node('#restore-version').handlers.click();
 assert.equal(vm.runInContext('plan.weeks.length',sandbox),12);

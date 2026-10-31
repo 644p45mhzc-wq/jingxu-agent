@@ -2,6 +2,8 @@
 from copy import deepcopy
 from datetime import date, timedelta
 from math import ceil
+from decimal import Decimal
+from backend.scheduling import date_windows
 from uuid import uuid4
 from pydantic import BaseModel, Field
 
@@ -32,6 +34,7 @@ class AdjustmentRequest(BaseModel):
     completed: dict[str, bool]
     weekly_hours: float = Field(ge=1, le=40, allow_inf_nan=False)
     start: date
+    end: date | None = None
 
 def adjust_plan(body, today):
     if body.plan.contest_id != body.contest_id:
@@ -54,39 +57,74 @@ def adjust_plan(body, today):
         if done:
             history.append({**deepcopy(week), 'tasks': done, 'history': True})
     budget = body.weekly_hours
-    future = []
-    current = []
-    used = 0.0
+    total = sum((Decimal(str(t['hours'])) for t in remaining), Decimal(0))
+    if body.end is not None:
+        if body.end < body.start:
+            raise ValueError('结束日期不能早于开始日期。')
+        if (body.end-body.start).days >= 448:
+            raise ValueError('调整日期范围不能超过64周。')
+        windows = date_windows(body.start, body.end, budget)
+        available = sum((Decimal(str(w['hours'])) for w in windows), Decimal(0))
+        if total > available:
+            raise ValueError(f'所选日期最多可安排{available:g}小时，未完成任务需要{total:g}小时。请延长结束日期或增加每周预算；未修改原计划。')
+        # Spread existing work over the selected range, without increasing any
+        # weekly budget. The final capacity absorbs Decimal division residue.
+        capacities = []
+        allocated = Decimal(0)
+        for window in windows[:-1]:
+            capacity = total * Decimal(str(window['hours'])) / available
+            capacities.append(capacity); allocated += capacity
+        capacities.append(total-allocated)
+    else:
+        # Preserve compatibility for previously shipped clients without an end.
+        count = max(1, ceil(total/Decimal(str(budget))))
+        if len(history)+count > 64:
+            raise ValueError('按此预算需要超过64周，请提高每周预算后重试。')
+        try:
+            end = body.start + timedelta(days=count*7-1)
+        except OverflowError:
+            raise ValueError('结束日期超出可支持范围，请修改开始日期。')
+        windows = date_windows(body.start, end, budget)
+        capacities = [Decimal(str(budget))] * count
+    if len(history)+len(windows) > 64:
+        raise ValueError('历史记录与调整后的计划合计不能超过64周，请缩短日期范围。')
+    groups = [[] for _ in windows]
+    index, used = 0, Decimal(0)
     revision = uuid4().hex[:12]
     for task in remaining:
-        left = task['hours']
+        left = Decimal(str(task['hours']))
         part = 0
-        split = left > budget or (current and left > budget-used+.001)
-        while left > .00001:
-            capacity = round(budget-used, 6)
-            if capacity <= .00001:
-                future.append(current); current=[]; used=0; capacity=budget
-            take = round(min(left, capacity), 6)
-            part += 1
-            item = deepcopy(task)
-            item['hours'] = take
-            if split:
-                item['id'] = f"adj-{revision}-{len(future)}-{len(current)}"
-                item['title'] = (task['title'][:120] + f'（分段 {part}）')
-                item['deliverable'] = (task['deliverable'][:380] + ' 分段持续推进同一交付物，记录本段成果；最后一段完成完整验收。')
-                item['source_task_id'] = task['id']
-            current.append(item); used=round(used+take,6); left=round(left-take,6)
-    if current:
-        future.append(current)
-    if len(history)+len(future)>64:
-        raise ValueError('按此预算需要超过64周，请提高每周预算后重试。')
-    weeks=[]
-    for i, group in enumerate(future):
-        start=body.start+timedelta(weeks=i)
-        weeks.append({'title':f'调整后第{i+1}周：'+group[0]['title'][:80], 'start':start.isoformat(), 'end':(start+timedelta(days=6)).isoformat(), 'tasks':group})
-    total=round(sum(t['hours'] for t in remaining),6)
+        pieces = []
+        while left > 0:
+            while used >= capacities[index] and index+1 < len(windows):
+                index += 1; used = Decimal(0)
+            capacity = capacities[index]-used
+            if capacity <= 0:
+                raise ValueError('所选日期无法容纳全部任务，请增加时间预算。')
+            take = min(left, capacity)
+            item = deepcopy(task); item['hours'] = float(take)
+            pieces.append((index,item)); used += take; left -= take
+        for part,(week_index,item) in enumerate(pieces,1):
+            if len(pieces)>1:
+                item['id'] = f'adj-{revision}-{week_index}-{len(groups[week_index])}'
+                item['title'] = task['title'][:120]+f'（分段 {part}）'
+                item['deliverable'] = task['deliverable'][:380]+' 分段持续推进同一交付物，记录本段成果；最后一段完成完整验收。'
+                item['source_task_id'] = task.get('source_task_id',task['id'])
+            groups[week_index].append(item)
+    weeks = [{'title':f'调整后第{i+1}周：'+group[0]['title'][:80],
+              'start':windows[i]['start'],'end':windows[i]['end'],'tasks':group}
+             for i,group in enumerate(groups) if group]
     result=deepcopy(original)
     result['weeks']=history+weeks
-    result['schedule']={**(original.get('schedule') or {}), 'start':body.start.isoformat(), 'end':weeks[-1]['end'], 'weeks':len(weeks), 'hours':budget, 'budget_source':'user', 'note':'按新的时间预算重新安排未完成任务；已完成任务保留原日期与内容。训练结束时间不代表官方截止日。'}
-    result['adjustment']={'remaining_hours':total,'remaining_weeks':len(weeks),'preserved_tasks':len(completed),'original_remaining_tasks':len(remaining)}
-    return {'plan':result,'completed':completed,'summary':f'保留{len(completed)}项已完成任务；{len(remaining)}项未完成任务共{total:g}小时，按每周{budget:g}小时安排为{len(weeks)}周。超过单周容量的任务分段推进，所有未完成工作均保留。'}
+    schedule={**(original.get('schedule') or {}), 'start':body.start.isoformat(),
+              'end':body.end.isoformat() if body.end else weeks[-1]['end'],
+              'weeks':len(weeks),'hours':budget,'budget_source':'user',
+              'note':'在指定日期内重新安排未完成任务；不足一周按天数折算预算。已完成任务保留原日期与内容。训练结束时间不代表官方截止日。'}
+    schedule.pop('week_budgets',None)
+    if body.end is not None:
+        schedule.update(date_source='user',weeks_source='dates',week_budgets=windows)
+    else:
+        schedule.pop('date_source',None)
+    result['schedule']=schedule
+    result['adjustment']={'remaining_hours':float(total),'remaining_weeks':len(weeks),'preserved_tasks':len(completed),'original_remaining_tasks':len(remaining)}
+    return {'plan':result,'completed':completed,'summary':f'保留{len(completed)}项已完成任务；{len(remaining)}项未完成任务共{total:g}小时，按每周不超过{budget:g}小时安排为{len(weeks)}周。所有未完成工作均保留。'}

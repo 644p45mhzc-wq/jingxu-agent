@@ -1,0 +1,33 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
+const nodes=new Map(),store=new Map();let failStorage=false;
+function node(id){if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',innerHTML:'',hidden:false,disabled:false,checked:false,children:[],handlers:{},classList:{add(){}},addEventListener(k,h){this.handlers[k]=h},appendChild(n){this.children.push(n)},remove(){},scrollIntoView(){},focus(){},setCustomValidity(text){this.validationMessage=text},reportValidity(){return !this.validationMessage}});return nodes.get(id)}
+const fixture={contest_id:'cumcm',contest_name:'数学建模',mode:'template',summary:'旧计划',schedule:{start:'2026-11-01',end:'2026-11-10',hours:7,weeks:2},weeks:[{title:'第一周',start:'2026-11-01',end:'2026-11-07',tasks:[{id:'a',title:'已完成任务',deliverable:'原成果',hours:4,resource_ids:[]},{id:'b',title:'未完成任务',deliverable:'未完成成果',hours:3,resource_ids:[]}]},{title:'第二周',start:'2026-11-08',end:'2026-11-10',tasks:[{id:'c',title:'后续任务',deliverable:'后续成果',hours:3,resource_ids:[]}]}]};
+const sandbox={window:{addEventListener(){}},document:{querySelector:node,querySelectorAll:()=>[],createElement:()=>node('created')},location:{pathname:'/competitions/cumcm'},ProfileStore:{load:()=>({major:'光电',grade:'大二',skills:'Python'}),today:()=> '2026-10-31'},localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>{if(failStorage)throw Error('quota');store.set(k,v)}},AbortController,TextDecoder,setTimeout:()=>1,clearTimeout(){},confirm:()=>true,fetch:async()=>({ok:true,json:async()=>({configured:false,schedule:fixture.schedule,resources:[],contest:{name:'建模',short:'建模',tags:[],timeline:[],learning_path:[],pending:''}})})};
+vm.createContext(sandbox);vm.runInContext(fs.readFileSync(path.join(__dirname,'../frontend/app.js'),'utf8'),sandbox);
+const tick=()=>new Promise(setImmediate);const run=code=>vm.runInContext(code,sandbox);const dates=(start,end,prefix='plan')=>{node('#'+prefix+'-start').value=start;node('#'+prefix+'-end').value=end;};
+(async()=>{
+ await tick();assert.equal(node('#plan-start').value,'2026-11-01');assert.equal(node('#plan-end').value,'2026-11-10');
+ dates('2026-11-01','2026-11-01');assert(run("dateRangeValid('plan',84)"));
+ dates('2026-11-02','2026-11-01');assert(!run("dateRangeValid('plan',84)"));
+ dates('2026-11-01','2027-02-01');assert(!run("dateRangeValid('plan',84)"));
+ dates('2026-11-01','2026-11-10');assert(run("dateRangeValid('plan',84)"));
+ sandbox.fixture=fixture;run('plan=fixture;completed={a:true};submissionDrafts={a:"成果草稿"}');run('save()');const original=store.get('jingxu-v2-cumcm');
+ let resolve;let request;
+ sandbox.fetch=async(url,options)=>{request=JSON.parse(options.body);return {ok:true,json:async()=>{await new Promise(r=>resolve=r);return {...fixture,summary:'新计划'};}};};
+ const pending=run('generate("template")');await tick();dates('2026-11-01','2026-11-11');resolve();await pending;
+ assert.equal(run('generatedPreview'),null);assert.equal(run('plan.summary'),'旧计划');assert.equal(request.start_date,'2026-11-01');assert.equal(request.end_date,'2026-11-10');assert.equal(request.training_weeks,undefined);
+ dates('2026-11-01','2026-11-10');sandbox.fetch=async()=>({ok:true,json:async()=>({...fixture,summary:'新计划'})});await run('generate("template")');dates('2026-11-01','2026-11-12');node('#apply-generated').handlers.click();assert.equal(run('plan.summary'),'旧计划');assert.equal(run('generatedPreview'),null);
+ dates('2026-11-01','2026-11-10');await run('generate("template")');node('#plan-end').handlers.input();assert.equal(run('generatedPreview'),null);
+ dates('2026-11-02','2026-11-20','adjust');const adjusted={...fixture,summary:'调整版',schedule:{...fixture.schedule,start:'2026-11-02',end:'2026-11-20'}};
+ sandbox.fetch=async(url,options)=>{assert.equal(url,'/api/plan/adjust');request=JSON.parse(options.body);return {ok:true,json:async()=>({plan:adjusted,completed:{a:true},summary:'调整'})};};
+ await node('#preview-adjust').handlers.click();assert.equal(request.start,'2026-11-02');assert.equal(request.end,'2026-11-20');assert.equal(run('plan.summary'),'旧计划');
+ failStorage=true;node('#apply-adjust').handlers.click();assert.equal(run('plan.summary'),'旧计划');assert.equal(store.get('jingxu-v2-cumcm'),original);
+ failStorage=false;node('#apply-adjust').handlers.click();assert.equal(run('plan.summary'),'调整版');const saved=JSON.parse(store.get('jingxu-v2-cumcm'));assert.equal(saved.planStart,'2026-11-02');assert.equal(saved.planEnd,'2026-11-20');assert(saved.completed.a);assert.equal(saved.submissionDrafts.a,'成果草稿');assert.equal(saved.versions.length,1);assert.equal(saved.versions[0].state.plan.summary,'旧计划');
+ dates('2026-12-01','2026-12-02');run('restore()');assert.equal(node('#plan-start').value,'2026-11-02');assert.equal(node('#plan-end').value,'2026-11-20');
+ node('#version-select').value=saved.versions[0].id;node('#restore-version').handlers.click();assert.equal(run('plan.summary'),'旧计划');assert.equal(node('#plan-end').value,'2026-11-10');
+ sandbox.fetch=async()=>({ok:true,json:async()=>{await new Promise(r=>resolve=r);return {plan:adjusted,completed:{a:true},summary:'调整'};}});
+ dates('2026-11-02','2026-11-20','adjust');const p=node('#preview-adjust').handlers.click();await tick();dates('2026-11-02','2026-11-21','adjust');resolve();await p;assert.equal(run('adjustmentPreview'),null);assert.equal(run('plan.summary'),'旧计划');
+ dates('2026-11-02','2026-11-20','adjust');sandbox.fetch=async()=>({ok:false,json:async()=>({detail:'所选日期容量不足，请延长结束日期。'})});await node('#preview-adjust').handlers.click();assert.equal(run('plan.summary'),'旧计划');assert(node('#notice').textContent.includes('延长'));
+ const old={plan:fixture,trainingWeeks:2,completed:{a:true}};store.set('jingxu-v2-cumcm',JSON.stringify(old));run('restore()');assert.equal(node('#plan-start').value,fixture.schedule.start);assert.equal(node('#plan-end').value,fixture.schedule.end);
+ console.log('Date fields, generation payload, stale settings, adjustment end date, quota rollback, history, drafts and legacy restore passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});

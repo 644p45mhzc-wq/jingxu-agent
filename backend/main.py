@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from backend.growth_memory import DailyLog, MemoryRequest, growth_summary
 from backend.catalog import CONTESTS, BY_ID, public_contest
-from backend.scheduling import preparation_schedule, today_shanghai
+from backend.scheduling import preparation_schedule, today_shanghai, set_training_dates, date_windows
 from backend.chat_stream import stream_reply
 from backend.plan_adjustment import AdjustmentRequest, ExistingPlan, adjust_plan
 
@@ -42,6 +42,8 @@ class Profile(BaseModel):
     skills: str = Field(min_length=1, max_length=500)
 
 class PlanRequest(Profile):
+    start_date: date | None = None
+    end_date: date | None = None
     growth_logs: list[DailyLog] = Field(default_factory=list, max_length=120)
     training_weeks: int | None = Field(default=None, ge=1, le=12)
     weekly_hours: float | None = Field(default=None, ge=1, le=40, allow_inf_nan=False)
@@ -207,10 +209,15 @@ def finalize(plan, profile, mode, contest_id='cumcm', schedule=None):
     result = plan.model_dump()
     for i, week in enumerate(result['weeks']):
         total = sum(t['hours'] for t in week['tasks'])
-        if total > profile.hours + 0.001:
+        budget = schedule['week_budgets'][i]['hours'] if schedule and schedule.get('week_budgets') else profile.hours
+        if total > budget + 0.001:
             raise ValueError('任务超出每周可用时间')
-        week['start'] = (profile.start + timedelta(weeks=i)).isoformat()
-        week['end'] = min(profile.start + timedelta(weeks=i, days=6), date.fromisoformat(schedule['end'])).isoformat() if schedule else (profile.start + timedelta(weeks=i, days=6)).isoformat()
+        if schedule and schedule.get('week_budgets'):
+            week['start'] = schedule['week_budgets'][i]['start']
+            week['end'] = schedule['week_budgets'][i]['end']
+        else:
+            week['start'] = (profile.start + timedelta(weeks=i)).isoformat()
+            week['end'] = min(profile.start + timedelta(weeks=i, days=6), date.fromisoformat(schedule['end'])).isoformat() if schedule else (profile.start + timedelta(weeks=i, days=6)).isoformat()
         for j, task in enumerate(week['tasks']):
             task['id'] = f'w{i+1}-t{j+1}'
             task['resource_ids'] = [r for r in task['resource_ids'] if r in valid_ids]
@@ -222,7 +229,16 @@ async def plan(profile: PlanRequest, mode: Literal['ai', 'template'] = 'ai', con
     schedule = preparation_schedule(contest)
     schedule['suggested_weeks'] = schedule['weeks']
     schedule['weeks_source'] = 'user' if profile.training_weeks is not None else 'suggested'
-    if profile.training_weeks is not None:
+    if (profile.start_date is None) != (profile.end_date is None):
+        raise HTTPException(422, '请同时填写开始日期和结束日期。')
+    if profile.start_date is not None:
+        if profile.training_weeks is not None:
+            raise HTTPException(422, '日期范围和旧版备赛周数不能同时设置。')
+        try:
+            set_training_dates(schedule, profile.start_date, profile.end_date, today_shanghai())
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+    elif profile.training_weeks is not None:
         schedule['weeks'] = profile.training_weeks
         schedule['end'] = (date.fromisoformat(schedule['start']) + timedelta(weeks=profile.training_weeks, days=-1)).isoformat()
         schedule['note'] = f'本计划按用户设置的 {profile.training_weeks} 周生成（系统原建议 {schedule["suggested_weeks"]} 周）。训练日期是个人安排，不代表官方报名或截止日期。'
@@ -241,6 +257,8 @@ async def plan(profile: PlanRequest, mode: Literal['ai', 'template'] = 'ai', con
         if schedule['hours'] < memory['requested_hours']:
             schedule['budget_source'] = 'history'
         schedule['note'] += ' 跨竞赛记忆：' + memory['reason']
+    if schedule.get('date_source') == 'user':
+        schedule['week_budgets'] = date_windows(date.fromisoformat(schedule['start']), date.fromisoformat(schedule['end']), schedule['hours'])
     profile = PreparedProfile(**profile.model_dump(include={'major','grade','skills'}), hours=schedule['hours'], weeks=schedule['weeks'], start=schedule['start'])
     if mode == 'template':
         topics = contest['topics']
@@ -270,9 +288,10 @@ async def plan(profile: PlanRequest, mode: Literal['ai', 'template'] = 'ai', con
                           f'复测并完善第{rank+1}版成果：{task}')
             else:
                 action = task
-            main_hours = round(profile.hours * .7, 2)
-            check_hours = round(profile.hours * .2, 2)
-            recap_hours = round(profile.hours - main_hours - check_hours, 2)
+            week_hours = schedule['week_budgets'][index]['hours'] if schedule.get('week_budgets') else profile.hours
+            main_hours = round(week_hours * .7, 2)
+            check_hours = round(week_hours * .2, 2)
+            recap_hours = round(week_hours - main_hours - check_hours, 2)
             acceptance = (f'第{index+1}周成果：' + deliverable +
                           (' 附步骤拆解、现状记录与最小可运行/可展示基线。' if step == steps[0] else
                            ' 记录与前一版的差异，附至少2个练习或验证记录。' if step == steps[1] else
@@ -284,7 +303,7 @@ async def plan(profile: PlanRequest, mode: Literal['ai', 'template'] = 'ai', con
         return finalize(GeneratedPlan(summary=f'这是《{contest["name"]}》的训练模板，按竞赛时间安排，非 AI 生成。短周期只完成精简交付物，不代表能完成全部正式参赛要求。配置 DeepSeek 后可获得个性化建议。' + (' 已参考成长记录调整工时；任务内容仍是通用模板。' if memory['entries'] else ''), weeks=weeks), profile, 'template', contest_id, schedule)
     prompt = f'''生成恰好 {profile.weeks} 周的个性化备赛计划，每周任务总工时不超过 {profile.hours} 小时。
 返回 JSON：{{"summary":"适配理由、能力缺口和待核实事项","weeks":[{{"title":"阶段名称","tasks":[{{"title":"具体任务","deliverable":"交付物及验收标准","hours":2,"resource_ids":["official"]}}]}}]}}。
-每周 1～5 项任务，每项工时为正数，只使用已有资源 ID，不输出 URL。阶段应逐步递进，结合用户基础安排任务。若系统训练安排含growth_memory，参考其近期实际成果与阻碍：把已练习的通用能力安排为短诊断再衔接当前竞赛，反复卡点先补基础；不要把自报完成当作能力认证，不得跳过新竞赛的专项要求。每周必须有不同的具体练习或迭代目标，不能重复同一任务；交付物包含可检查的验收标准和与上周成果的衔接。'''
+每周 1～5 项任务，每项工时为正数，只使用已有资源 ID，不输出 URL。若系统训练安排有week_budgets，每周严格遵守对应hours；最后不足一周的预算已按天数折算，不能使用完整周预算。阶段应逐步递进，结合用户基础安排任务。若系统训练安排含growth_memory，参考其近期实际成果与阻碍：把已练习的通用能力安排为短诊断再衔接当前竞赛，反复卡点先补基础；不要把自报完成当作能力认证，不得跳过新竞赛的专项要求。每周必须有不同的具体练习或迭代目标，不能重复同一任务；交付物包含可检查的验收标准和与上周成果的衔接。'''
     raw = await deepseek([{'role': 'system', 'content': context(profile, contest_id, schedule)}, {'role': 'user', 'content': prompt}], True)
     try:
         return finalize(GeneratedPlan.model_validate_json(raw), profile, 'ai', contest_id, schedule)

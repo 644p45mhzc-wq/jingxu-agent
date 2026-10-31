@@ -41,3 +41,29 @@ def preparation_schedule(contest, today=None):
     note += '每周工时为系统建议，可在对话中调整。'
     return {'start': today.isoformat(), 'end': end.isoformat(), 'target_label': label,
             'basis': basis, 'source': source, 'weeks': weeks, 'hours': weekly_hours, 'note': note}
+
+
+def date_windows(start, end, weekly_hours):
+    """Inclusive personal training range; partial weeks have proportional capacity."""
+    if end < start:
+        raise ValueError('结束日期不能早于开始日期。')
+    days = (end - start).days + 1
+    windows = []
+    for offset in range(0, days, 7):
+        first = start + timedelta(days=offset)
+        length = min(7, days - offset)
+        windows.append({'start': first.isoformat(), 'end': (first + timedelta(days=length-1)).isoformat(),
+                        'days': length, 'hours': round(weekly_hours * length / 7, 2)})
+    return windows
+
+
+def set_training_dates(schedule, start, end, today):
+    if start < today:
+        raise ValueError('开始日期不能早于今天。')
+    days = (end - start).days + 1
+    if not 1 <= days <= 84:
+        raise ValueError('结束日期不能早于开始日期，备赛日期范围为1至84天（含首尾日期）。')
+    schedule.update(start=start.isoformat(), end=end.isoformat(), weeks=ceil(days/7),
+                    weeks_source='dates', date_source='user',
+                    note='按用户设置的开始和结束日期安排，含首尾日期；不足一周按天数折算预算。训练日期不代表官方截止日。')
+    return schedule
