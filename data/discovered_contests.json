@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "last_attempt_at": "2026-11-01T15:07:13.214151+00:00",
+  "last_attempt_at": "2026-11-01T15:38:18.347909+00:00",
   "items": [
     {
       "id": "discovered-6df018ad5cd20016",
@@ -8,8 +8,9 @@
       "url": "https://www.bilibili.com/video/av738227595",
       "platform": "bili",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-725ee0aee294f6bb",
@@ -17,8 +18,9 @@
       "url": "https://www.bilibili.com/video/av610598970",
       "platform": "bili",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-b67d23feac38f74a",
@@ -26,8 +28,9 @@
       "url": "https://www.bilibili.com/video/av395270917",
       "platform": "bili",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-690eea6056e1fb6f",
@@ -35,8 +38,9 @@
       "url": "https://www.xiaohongshu.com/explore/6ab6837a000000001802c5d6",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-b90531e233072966",
@@ -44,8 +48,9 @@
       "url": "https://www.xiaohongshu.com/explore/6ad4d177000000003100297e",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-5b21bfc6c77e54f2",
@@ -53,8 +58,9 @@
       "url": "https://www.xiaohongshu.com/explore/6ad4d177000000003100297e",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-461da09e00fa364e",
@@ -62,8 +68,9 @@
       "url": "https://www.xiaohongshu.com/explore/6ab9e01d0000000015017eed",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-41627cb5f7429a5c",
@@ -80,8 +87,9 @@
       "url": "https://www.xiaohongshu.com/explore/6acf630f00000000150114cb",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-dbf58719125928d1",
@@ -89,8 +97,9 @@
       "url": "https://www.xiaohongshu.com/explore/6acf630f00000000150114cb",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-733d5b26398e7cf9",
@@ -98,8 +107,9 @@
       "url": "https://www.xiaohongshu.com/explore/64425c36000000000703a9df",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-04042f7b85df493a",
@@ -107,8 +117,9 @@
       "url": "https://www.xiaohongshu.com/explore/64425c36000000000703a9df",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-5a8d9d23cacba50b",
@@ -116,8 +127,9 @@
       "url": "https://www.xiaohongshu.com/explore/64425c36000000000703a9df",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-98ea55095435936e",
@@ -125,8 +137,9 @@
       "url": "https://www.xiaohongshu.com/explore/690c77df0000000007003da3",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-315759a6cfad2340",
@@ -134,8 +147,9 @@
       "url": "https://www.xiaohongshu.com/explore/690c77df0000000007003da3",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-29794e5c9c121d52",
@@ -143,8 +157,9 @@
       "url": "https://www.xiaohongshu.com/explore/690c77df0000000007003da3",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-93aed607904e529c",
@@ -152,8 +167,9 @@
       "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-b3352663955c523d",
@@ -161,8 +177,9 @@
       "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-8be4997e1d039cfa",
@@ -170,8 +187,9 @@
       "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-296c0e2e1df8a7f7",
@@ -179,8 +197,9 @@
       "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-9790822693cb5b11",
@@ -188,8 +207,9 @@
       "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-109631b13f66b332",
@@ -197,8 +217,9 @@
       "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-22cde957b95307dc",
@@ -206,8 +227,9 @@
       "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-962716910b62cd06",
@@ -215,8 +237,9 @@
       "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-b6da4f2f04bd2c98",
@@ -224,8 +247,9 @@
       "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-6dcd7c1bc45dfe33",
@@ -233,8 +257,9 @@
       "url": "https://www.xiaohongshu.com/explore/6abb65f2000000001c01e399",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-e0db4b858ff07e5d",
@@ -242,8 +267,9 @@
       "url": "https://www.xiaohongshu.com/explore/6abb65f2000000001c01e399",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-43f751baaa00ec20",
@@ -251,8 +277,9 @@
       "url": "https://www.xiaohongshu.com/explore/6abb65f2000000001c01e399",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-681113c97c430493",
@@ -260,8 +287,9 @@
       "url": "https://www.xiaohongshu.com/explore/6abb65f2000000001c01e399",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-f2d6fbf8f3edb399",
@@ -269,8 +297,9 @@
       "url": "https://www.xiaohongshu.com/explore/6abb65f2000000001c01e399",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-92de81893c55a05c",
@@ -278,8 +307,9 @@
       "url": "https://www.xiaohongshu.com/explore/6518cb4d000000001f03d5d8",
       "platform": "xhs",
       "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
-      "verified": false
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     },
     {
       "id": "discovered-8cafbbd44c81924a",
@@ -298,20 +328,30 @@
       "first_seen_at": "2026-11-01T15:07:13.214151+00:00",
       "last_seen_at": "2026-11-01T15:07:13.214151+00:00",
       "verified": false
+    },
+    {
+      "id": "discovered-2a83408f51b9f5a2",
+      "name": "全国大学生戏曲知识竞赛",
+      "url": "https://www.bilibili.com/video/av117541695461281",
+      "platform": "bili",
+      "first_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "last_seen_at": "2026-11-01T15:38:18.347909+00:00",
+      "verified": false,
+      "official_urls": []
     }
   ],
   "platforms": {
     "bili": {
-      "last_attempt_at": "2026-11-01T15:07:13.214151+00:00",
-      "last_success_at": "2026-11-01T15:07:13.214151+00:00",
+      "last_attempt_at": "2026-11-01T15:38:18.347909+00:00",
+      "last_success_at": "2026-11-01T15:38:18.347909+00:00",
       "state": "success",
-      "discovered_count": 4
+      "discovered_count": 5
     },
     "xhs": {
-      "last_attempt_at": "2026-11-01T15:07:13.214151+00:00",
-      "last_success_at": "2026-11-01T15:07:13.214151+00:00",
+      "last_attempt_at": "2026-11-01T15:38:18.347909+00:00",
+      "last_success_at": "2026-11-01T15:38:18.347909+00:00",
       "state": "success",
-      "discovered_count": 29
+      "discovered_count": 27
     }
   }
 }
