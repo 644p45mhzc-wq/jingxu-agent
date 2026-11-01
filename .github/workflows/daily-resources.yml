@@ -45,7 +45,9 @@ jobs:
           uv sync --frozen
           uv run --frozen playwright install --with-deps chromium
       - name: Test ingestion before collecting
-        run: python -m unittest discover -s tests -p test_discovered_contests.py -v
+        run: |
+          python -m unittest discover -s tests -p test_discovered_contests.py -v
+          python -m unittest discover -s tests -p test_official_verification.py -v
       - name: Collect and sanitize
         id: crawl
         continue-on-error: true
@@ -55,11 +57,13 @@ jobs:
           MEDIACRAWLER_BILI_COOKIE: ${{ secrets.MEDIACRAWLER_BILI_COOKIE }}
           MEDIACRAWLER_XHS_COOKIE: ${{ secrets.MEDIACRAWLER_XHS_COOKIE }}
         run: python -m research.daily
+      - name: Verify current official notices
+        run: python -m research.verify_official
       - name: Save sanitized snapshot and status
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- data/discovered_contests.json
+          git add -- data/discovered_contests.json data/contest_profiles.json
           if ! git diff --cached --quiet; then
             git commit -m 'Discover new competitions and update collection status'
             git pull --rebase

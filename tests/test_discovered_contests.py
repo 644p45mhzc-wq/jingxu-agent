@@ -62,6 +62,13 @@ class DiscoveryTests(unittest.TestCase):
         self.assertNotIn('报名通知', item['name'])
         self.assertFalse(item['verified'])
 
+    def test_only_clean_institutional_links_are_retained_as_evidence(self):
+        item = normalize({'title': '全国大学生测试创新竞赛报名通知', 'video_id': '123',
+                          'desc': '正式通知 https://contest.example.edu.cn/notice 其他 https://example.com/x?token=secret'},
+                         'bili', STAMP)[0]
+        self.assertEqual(item['official_urls'], ['https://contest.example.edu.cn/notice'])
+        self.assertNotIn('secret', json.dumps(item))
+
     def test_existing_competition_and_unrelated_posts_skipped(self):
         for title in ['全国大学生数学建模竞赛报名', '学习经验分享', '全国大学生竞赛推荐大赛', '全国大学生课外学术科技作品竞赛',
                       '国际大学生创新大赛', '全国大学生数学建模大赛', '中国大学生创业计划大赛']:

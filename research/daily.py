@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import subprocess
 import tempfile
+from urllib.parse import urlsplit
 from backend.catalog import CONTESTS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,6 +41,15 @@ def normalize(record, platform, timestamp):
     else:
         return []
     text = str(record.get('title') or '') + '\n' + str(record.get('desc') or '')
+    official_urls = []
+    for candidate_url in re.findall(r'https://[^\s<>"\'，。；）]+', text):
+        candidate_url = candidate_url.rstrip('.,;')
+        parts = urlsplit(candidate_url)
+        host = (parts.hostname or '').lower()
+        if (parts.scheme == 'https' and not parts.username and not parts.query and not parts.fragment
+                and (host.endswith('.edu.cn') or host.endswith('.gov.cn'))):
+            official_urls.append(candidate_url)
+    official_urls = list(dict.fromkeys(official_urls))[:3]
     known = known_names()
     result = []
     for name in dict.fromkeys(NAME.findall(text)):
@@ -49,7 +59,8 @@ def normalize(record, platform, timestamp):
             continue
         result.append({'id': 'discovered-' + hashlib.sha256(name.encode()).hexdigest()[:16],
                        'name': name, 'url': url, 'platform': platform,
-                       'first_seen_at': timestamp, 'last_seen_at': timestamp, 'verified': False})
+                       'first_seen_at': timestamp, 'last_seen_at': timestamp, 'verified': False,
+                       'official_urls': official_urls})
     return result
 
 
@@ -74,7 +85,8 @@ def merge(old, batches, statuses, timestamp):
             if key in known:
                 continue
             if key in items:
-                items[key] = {**items[key], 'last_seen_at': timestamp}
+                urls = list(dict.fromkeys(items[key].get('official_urls', []) + item.get('official_urls', [])))[:5]
+                items[key] = {**items[key], 'last_seen_at': timestamp, 'official_urls': urls}
             else:
                 items[key] = item
     return {'version': 1, 'last_attempt_at': timestamp, 'items': list(items.values()),
