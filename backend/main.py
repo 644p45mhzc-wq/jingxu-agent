@@ -11,10 +11,14 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from backend.growth_memory import DailyLog, MemoryRequest, growth_summary
-from backend.catalog import CONTESTS, BY_ID, public_contest
+from backend.catalog import CONTESTS as CURATED_CONTESTS, BY_ID as CURATED_BY_ID, public_contest
 from backend.scheduling import preparation_schedule, today_shanghai, set_training_dates, date_windows
 from backend.chat_stream import stream_reply
 from backend.plan_adjustment import AdjustmentRequest, ExistingPlan, adjust_plan
+
+# Keep curated source immutable while loading approved discoveries.
+CONTESTS = list(CURATED_CONTESTS)
+BY_ID = dict(CURATED_BY_ID)
 
 # The key lives only in .env, which is not committed and not shipped. Without
 # one the app still browses resources and builds template plans.
@@ -32,6 +36,8 @@ app = FastAPI(title='竞序 · 大学生备赛助手')
 app.mount('/static', StaticFiles(directory=ROOT / 'frontend'), name='static')
 
 def get_contest(contest_id):
+    from backend.discovered_contests import refresh
+    refresh(CONTESTS, BY_ID)
     if contest_id not in BY_ID:
         raise HTTPException(404, '未找到该竞赛，请返回首页选择。')
     return BY_ID[contest_id]
@@ -190,6 +196,8 @@ def competition_page(contest_id: str):
 
 @app.get('/api/contests')
 def contests():
+    from backend.discovered_contests import refresh
+    refresh(CONTESTS, BY_ID)
     return {'contests': [public_contest(c) for c in CONTESTS], 'verified_at': max(c['verified_at'] for c in CONTESTS)}
 
 @app.get('/api/bootstrap')

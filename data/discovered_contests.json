@@ -1,0 +1,299 @@
+{
+  "version": 1,
+  "last_attempt_at": "2026-11-01T13:15:16.599496+00:00",
+  "items": [
+    {
+      "id": "discovered-6df018ad5cd20016",
+      "name": "全国大学生英语词汇大赛",
+      "url": "https://www.bilibili.com/video/av738227595",
+      "platform": "bili",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-725ee0aee294f6bb",
+      "name": "全国大学生普通话大赛",
+      "url": "https://www.bilibili.com/video/av610598970",
+      "platform": "bili",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-b67d23feac38f74a",
+      "name": "全国大学生英语竞赛",
+      "url": "https://www.bilibili.com/video/av395270917",
+      "platform": "bili",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-690eea6056e1fb6f",
+      "name": "全国大学生数字媒体科技作品及创意竞赛",
+      "url": "https://www.xiaohongshu.com/explore/6ab6837a000000001802c5d6",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-b90531e233072966",
+      "name": "全国大学生职业规划大赛",
+      "url": "https://www.xiaohongshu.com/explore/6ad4d177000000003100297e",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-5b21bfc6c77e54f2",
+      "name": "全国大学生互联网英语听说大赛",
+      "url": "https://www.xiaohongshu.com/explore/6ad4d177000000003100297e",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-461da09e00fa364e",
+      "name": "全国大学生市场调查与分析大赛",
+      "url": "https://www.xiaohongshu.com/explore/6ab9e01d0000000015017eed",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-41627cb5f7429a5c",
+      "name": "全国大学生创业大赛",
+      "url": "https://www.xiaohongshu.com/explore/67d571f3000000001c002c0f",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-e807799dad68b8b1",
+      "name": "全国大学生金融知识大赛",
+      "url": "https://www.xiaohongshu.com/explore/6acf630f00000000150114cb",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-dbf58719125928d1",
+      "name": "全国大学生财经素养大赛",
+      "url": "https://www.xiaohongshu.com/explore/6acf630f00000000150114cb",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-733d5b26398e7cf9",
+      "name": "国际大学生平面设计大赛",
+      "url": "https://www.xiaohongshu.com/explore/64425c36000000000703a9df",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-04042f7b85df493a",
+      "name": "中国大学生原创动漫大赛",
+      "url": "https://www.xiaohongshu.com/explore/64425c36000000000703a9df",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-5a8d9d23cacba50b",
+      "name": "全国大学生工业设计大赛",
+      "url": "https://www.xiaohongshu.com/explore/64425c36000000000703a9df",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-98ea55095435936e",
+      "name": "全国大学生新媒体大赛",
+      "url": "https://www.xiaohongshu.com/explore/690c77df0000000007003da3",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-315759a6cfad2340",
+      "name": "全国大学生配音大赛",
+      "url": "https://www.xiaohongshu.com/explore/690c77df0000000007003da3",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-29794e5c9c121d52",
+      "name": "全国大学生高新技术竞赛",
+      "url": "https://www.xiaohongshu.com/explore/690c77df0000000007003da3",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-93aed607904e529c",
+      "name": "全国大学生财会职业能力大赛",
+      "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-b3352663955c523d",
+      "name": "国际大学生程序设计竞赛",
+      "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-8be4997e1d039cfa",
+      "name": "全国大学生机器人大赛",
+      "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-296c0e2e1df8a7f7",
+      "name": "全国大学生金融科技创新大赛",
+      "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-9790822693cb5b11",
+      "name": "全国大学生能源经济学术创意大赛",
+      "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-109631b13f66b332",
+      "name": "全国大学生物流设计大赛",
+      "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-22cde957b95307dc",
+      "name": "中国大学生服务外包创新创业大赛",
+      "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-962716910b62cd06",
+      "name": "全国大学生金相技能大赛",
+      "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-b6da4f2f04bd2c98",
+      "name": "全国大学生新一代信息通信技术大赛",
+      "url": "https://www.xiaohongshu.com/explore/66920027000000000a005d72",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-6dcd7c1bc45dfe33",
+      "name": "全国大学生物联网创新大赛",
+      "url": "https://www.xiaohongshu.com/explore/6abb65f2000000001c01e399",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-e0db4b858ff07e5d",
+      "name": "全国大学生职业素养大赛",
+      "url": "https://www.xiaohongshu.com/explore/6abb65f2000000001c01e399",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-43f751baaa00ec20",
+      "name": "全国大学生人工智能大赛",
+      "url": "https://www.xiaohongshu.com/explore/6abb65f2000000001c01e399",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-681113c97c430493",
+      "name": "国际大学生中医药文化知识传播大赛",
+      "url": "https://www.xiaohongshu.com/explore/6abb65f2000000001c01e399",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-f2d6fbf8f3edb399",
+      "name": "全国大学生华夏文化知识大赛",
+      "url": "https://www.xiaohongshu.com/explore/6abb65f2000000001c01e399",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    },
+    {
+      "id": "discovered-92de81893c55a05c",
+      "name": "全国大学生反走私创作大赛",
+      "url": "https://www.xiaohongshu.com/explore/6518cb4d000000001f03d5d8",
+      "platform": "xhs",
+      "first_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_seen_at": "2026-11-01T13:15:16.599496+00:00",
+      "verified": false
+    }
+  ],
+  "platforms": {
+    "bili": {
+      "last_attempt_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_success_at": "2026-11-01T13:15:16.599496+00:00",
+      "state": "success",
+      "discovered_count": 4
+    },
+    "xhs": {
+      "last_attempt_at": "2026-11-01T13:15:16.599496+00:00",
+      "last_success_at": "2026-11-01T13:15:16.599496+00:00",
+      "state": "success",
+      "discovered_count": 34
+    }
+  }
+}

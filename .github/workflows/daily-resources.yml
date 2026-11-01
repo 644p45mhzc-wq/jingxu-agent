@@ -1,0 +1,79 @@
+name: Daily competition discovery
+on:
+  schedule:
+    - cron: '0 4 * * *' # UTC 04:00 = Asia/Shanghai 12:00; may be delayed by GitHub.
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: daily-competition-discovery
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate upstream revision
+        env:
+          MC_REF: 68d9ef1c1da22eab75940dfd7cec259907006538
+        run: |
+          if [[ ! "$MC_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            echo 'MediaCrawler revision must be a reviewed full upstream commit SHA.'
+            exit 1
+          fi
+      - name: Checkout separate MediaCrawler runtime
+        uses: actions/checkout@v4
+        with:
+          repository: NanmiCoder/MediaCrawler
+          ref: 68d9ef1c1da22eab75940dfd7cec259907006538
+          path: .cache/MediaCrawler
+          persist-credentials: false
+      - name: Install application and isolated crawler dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install uv
+          cd .cache/MediaCrawler
+          uv sync --frozen
+          uv run --frozen playwright install --with-deps chromium
+      - name: Test ingestion before collecting
+        run: python -m unittest discover -s tests -p test_discovered_contests.py -v
+      - name: Collect and sanitize
+        id: crawl
+        continue-on-error: true
+        env:
+          MEDIACRAWLER_HOME: ${{ github.workspace }}/.cache/MediaCrawler
+          MEDIACRAWLER_PYTHON: ${{ github.workspace }}/.cache/MediaCrawler/.venv/bin/python
+          MEDIACRAWLER_BILI_COOKIE: ${{ secrets.MEDIACRAWLER_BILI_COOKIE }}
+          MEDIACRAWLER_XHS_COOKIE: ${{ secrets.MEDIACRAWLER_XHS_COOKIE }}
+        run: python -m research.daily
+      - name: Save sanitized snapshot and status
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- data/discovered_contests.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Discover new competitions and update collection status'
+            git pull --rebase
+            git push
+          fi
+      - name: Notify Render deployment (optional)
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            curl --silent --fail --output /dev/null --request POST "$RENDER_DEPLOY_HOOK"
+          fi
+      - name: Report incomplete collection
+        if: steps.crawl.outcome != 'success'
+        run: |
+          echo 'One or both platforms did not update. Previous data is retained; check status and credentials.'
+          exit 1
