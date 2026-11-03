@@ -1,0 +1,24 @@
+const assert=require('assert'),data=require('../frontend/workspace-data.js');
+function storage(initial={}){const map=new Map(Object.entries(initial));let writes=0,fail=0;return {get length(){return map.size},key:i=>[...map.keys()][i],getItem:k=>map.get(k)??null,setItem:(k,v)=>{writes++;if(writes===fail)throw new Error('quota');map.set(k,v)},removeItem:k=>map.delete(k),failAt:n=>{writes=0;fail=n},values:()=>Object.fromEntries(map)};}
+const task={id:'a',title:'数据练习',deliverable:'提交统计表',hours:1,resource_ids:[]};
+const week={title:'基础训练',start:'2026-10-30',end:'2026-11-05',tasks:[task]};
+const state={plan:{contest_id:'cumcm',summary:'计划',weeks:[week]},completed:{a:true},reviews:[],submissionDrafts:{},messages:[],versions:[]};
+const initial={'jingxu-v2-cumcm':JSON.stringify(state),'jingxu-profile-v1':JSON.stringify({major:'计算机',grade:'大二',skills:'Python'}),'jingxu-library-v1':JSON.stringify({favorites:['cumcm'],participating:[],archived:['cumcm']}),'jingxu-growth-enabled-v1':'false','unrelated-secret':'must-not-export'};
+const source=storage(initial),backup=data.exportData(source);assert(!Object.hasOwn(backup.entries,'unrelated-secret'));assert.equal(data.inspect(backup).plans,1);
+const target=storage({'jingxu-profile-v1':JSON.stringify({major:'旧画像',grade:'大三',skills:'写作'})});
+const merged=data.restoreData(backup,target);assert.equal(merged.skipped,1);assert.equal(JSON.parse(target.getItem('jingxu-profile-v1')).major,'旧画像');
+data.restoreData(backup,target,true);assert.equal(JSON.parse(target.getItem('jingxu-profile-v1')).major,'计算机');assert.equal(target.getItem('jingxu-growth-enabled-v1'),'false');
+const original=target.values();target.failAt(2);assert.throws(()=>data.restoreData(backup,target,true));assert.deepEqual(target.values(),original);
+const bad=structuredClone(backup);bad.entries['evil-key']='bad';assert.throws(()=>data.restoreData(bad,target,true));assert.deepEqual(target.values(),original);
+const malformed=structuredClone(backup);malformed.entries['jingxu-v2-cumcm'].plan.weeks[0].tasks=[null];assert.throws(()=>data.inspect(malformed));
+assert.equal(data.weekStatus(week,{}),'进行中');assert.equal(data.weekStatus(week,{a:true}),'自报完成 · 待验收');
+const review={week,review:{verdict:'passed'},applied:false};assert(data.weekStatus(week,{a:true},[review]).includes('待应用'));
+assert.equal(data.weekStatus(week,{a:true},[{...review,applied:true}]),'验收通过');
+assert.equal(data.weekStatus({...week,tasks:[{...task,title:'另一版本'}]},{a:true},[{...review,applied:true}]),'自报完成 · 待验收');
+const logs=[{contest_id:'cumcm',day:'2026-10-30',actual_hours:1,status:'partial',goal:'数据检查',progress:'完成缺失值统计',blocker:'还不会填补'},{contest_id:'innovation',day:'2026-10-30',actual_hours:2,status:'done',goal:'访谈',progress:'不要混入',blocker:''}];
+const summary=data.weeklyJournal(logs,'cumcm',week);assert(summary.includes('完成缺失值统计'));assert(!summary.includes('不要混入'));assert.equal(data.weeklyJournal(logs,'cumcm',{...week,start:'2026-11-06',end:'2026-11-12'}),'');
+const damaged=storage({'jingxu-v2-cumcm':'invalid JSON','jingxu-profile-v1':initial['jingxu-profile-v1']});
+const rescued=data.exportData(damaged);assert.equal(rescued.unreadable['jingxu-v2-cumcm'],'invalid JSON');assert(!Object.hasOwn(rescued.entries,'jingxu-v2-cumcm'));assert.equal(data.inspect(rescued).keys.length,1);
+const legacy={version:1,logs:[{contest_id:'cumcm',day:'2026-10-30',planned_hours:1,actual_hours:.5,status:'partial',goal:'检查',progress:'完成读取',blocker:'缺少填补',skills:'Python'}]};
+assert.equal(data.inspect(legacy).logs,1);const legacyTarget=storage();data.restoreData(legacy,legacyTarget);assert.equal(JSON.parse(legacyTarget.getItem('jingxu-growth-v1')).logs.length,1);
+console.log('Unified backup validation, safe merge, overwrite rollback, archived contests, week status and scoped weekly journal aggregation passed.');

@@ -14,9 +14,9 @@ import zipfile
 
 SKIP_DIRS = {'.venv', '.venv-local', '.venv-run', '.venv-local-unix',
              '__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache',
-             '.claude', '.tmptest', '.idea', '.vscode'}
+             '.claude', '.tmptest', '.idea', '.vscode', 'data'}
 SKIP_FILES = {'.env', '.DS_Store'}
-SKIP_SUFFIXES = ('.pyc', '.pyo', '.zip', '.log')
+SKIP_SUFFIXES = ('.pyc', '.pyo', '.zip', '.log', '.db', '.sqlite3', '.sqlite3-wal', '.sqlite3-shm')
 NAME = 'aiopc_v3'
 
 
@@ -34,7 +34,7 @@ def build(drop_git):
         for dirpath, dirnames, filenames in os.walk(root):
             dirnames[:] = [d for d in dirnames if not excluded_directory(dirpath, d, skip_dirs)]
             for name in sorted(filenames):
-                if name in SKIP_FILES or name.endswith(SKIP_SUFFIXES):
+                if name in SKIP_FILES or (name.startswith('.env.') and name != '.env.example') or name.endswith(SKIP_SUFFIXES):
                     continue
                 full = os.path.join(dirpath, name)
                 bundle.write(full, os.path.join(NAME, os.path.relpath(full, root)))

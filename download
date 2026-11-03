@@ -1,0 +1,40 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# 虚拟环境
+.venv/
+venv/
+env/
+ENV/
+.venv*/
+
+# 环境变量和密钥
+.env
+.env.*
+!.env.example
+
+# 编辑器配置
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# 测试和构建产物
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# 日志
+*.log
+
+# 其他缓存
+.cache/
+/data/

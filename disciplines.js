@@ -1,0 +1,5 @@
+(function(root){
+ const keywords={文:['中文','汉语','文学','历史','哲学','法学','法律','新闻','传播','外语','英语','经济','管理','金融','教育','艺术','设计','社会','广告'],理:['数学','物理','化学','生物','统计','地理','生命','科学'],医:['医学','临床','口腔','护理','药学','中医','康复','公共卫生','预防','检验'],工:['工程','计算机','软件','电子','光电','通信','自动化','机械','材料','建筑','电气','人工智能','信息']};
+ const api={infer(profile){const major=String(profile?.major||'').toLowerCase(); const scores=Object.entries(keywords).map(([k,words])=>[k,words.filter(w=>major.includes(w)).reduce((score,w)=>Math.max(score,w.length),0)]).sort((a,b)=>b[1]-a[1] || ['医','工','文','理'].indexOf(a[0])-['医','工','文','理'].indexOf(b[0]));return scores[0][1]?scores[0][0]:'全部';},matches(c,filter){return filter==='全部'||(filter==='跨专业'?(c.disciplines||[]).length>1:(c.disciplines||[]).includes(filter));},rule(c){return {keywords:c.tags||[],focus:(c.disciplines||[]).join(' / '),gap:c.fit_reason||'先核对资格，完成一次基础训练。'};}};
+ if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.DisciplineFilters=api;
+})(typeof window!=='undefined'?window:this);
