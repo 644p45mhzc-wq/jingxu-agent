@@ -218,12 +218,6 @@ async function init() {
     $('#contest-short').textContent = c.short;
     $('#side-tags').textContent = c.tags.join(' / ');
     $('#contest-scope').textContent = '';
-    for (const part of c.introduction || []) {
-      const paragraph = document.createElement('p');
-      const label = document.createElement('strong'); label.textContent = part.label + '：';
-      paragraph.append(label, document.createTextNode(part.text));
-      $('#contest-scope').appendChild(paragraph);
-    }
     if(c.registration_reference) {
       const ref = c.registration_reference;
       const note = document.createElement('p'); note.textContent = `报名参考：${ref.label} · 以当届通知为准`;
@@ -232,7 +226,6 @@ async function init() {
     }
     $('#contest-tags').innerHTML = [...(c.disciplines||[]).map(d=>d+'类'),...((c.disciplines||[]).length>1?['跨专业']:[]),...c.tags].map(t => `<span>${esc(t)}</span>`).join('');
     $('#contest-source').href = $('#timeline-source').href = c.source;
-    if (c.discovered) $('#contest-source').textContent = c.introduction ? '简介依据 ↗' : '发现来源 ↗';
     $('#pending-note').textContent = c.pending;
     renderChatHistory();
     $('#status').textContent = data.configured ? 'DeepSeek 已配置' : '模板体验 · AI 待配置';
@@ -240,9 +233,6 @@ async function init() {
     $('#resource-list').innerHTML = data.resources.map(r => `<a class="resource-card" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer"><span>${esc(r.type)}${r.type === '精选教程' ? ' · 2026-10-11核对' : ''} ↗</span><h3>${esc(r.title)}</h3><p>${esc(r.note)}</p></a>`).join('');
     $('#timeline').innerHTML = c.timeline.map(t => `<div class="timeline-item"><span class="date-chip">${eventDateLabel(t)}</span><h3>${esc(t.label)}</h3><strong>${t.year} 年 · ${esc(t.date)}</strong><p>${esc(t.detail)}</p><a href="${esc(t.source)}" target="_blank" rel="noopener noreferrer">${esc(t.source_label)} ↗</a></div>`).join('');
     $('#verified-label').textContent = `赛事资料核验：${c.verified_at || '2026-10-09'} · 人工维护`;
-    if (c.discovered) $('#verified-label').textContent = c.introduction
-      ? `简介整理：${c.introduction_updated_at} · ${c.identity_confirmed ? '当届赛程待核验' : '赛事身份与赛程待核验'}`
-      : '自动发现 · 赛事资料待核验';
     renderPlan();
     renderReviewHistory();
     $('#generate').disabled = $('#template').disabled = $('#send').disabled = false;

@@ -10,10 +10,6 @@ def today_shanghai():
 
 def preparation_schedule(contest, today=None):
     today = today or today_shanghai()
-    if not contest.get('timeline') and not contest.get('registration_reference'):
-        return {'start': today.isoformat(), 'end': (today + timedelta(days=27)).isoformat(),
-                'target_label': '赛程待核验', 'basis': 'unknown', 'source': contest['source'],
-                'weeks': 4, 'hours': 6, 'note': '未取得可靠报名时间，先安排四周基础训练，不代表比赛或报名日期。'}
     upcoming = sorted(
         (e for e in contest['timeline'] if e['kind'] == 'registration'
          and e['precision'] == 'day' and len(e['start']) == 10
