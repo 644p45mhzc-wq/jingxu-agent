@@ -64,7 +64,7 @@ function restoreDateInputs(state){
  $('#plan-start').value=state.planStart||saved?.schedule?.start||saved?.weeks?.[0]?.start||$('#plan-start').value||ProfileStore.today();
  $('#plan-end').value=state.planEnd||saved?.schedule?.end||saved?.weeks?.at(-1)?.end||(state.trainingWeeks?addDays($('#plan-start').value,state.trainingWeeks*7-1):$('#plan-end').value)||addDays($('#plan-start').value,6);
  $('#adjust-start').value=$('#plan-start').value<ProfileStore.today()?ProfileStore.today():$('#plan-start').value;
- $('#adjust-end').value=$('#plan-end').value;
+ $('#adjust-end').value=saved?.schedule?.competition_deadline || '';
 }
 function dateRangeValid(prefix,limit){
  const start=$('#'+prefix+'-start'),end=$('#'+prefix+'-end');
@@ -88,7 +88,7 @@ function commitState(next,history) {
   try{localStorage.setItem(storageKey,JSON.stringify(stored));}catch{notify('存储空间不足，未替换当前计划。请先下载完整备份并清理不需要的数据。');return false;}
   plan=stored.plan;completed=stored.completed||{};reviews=stored.reviews||[];submissionDrafts=stored.submissionDrafts||{};messages=stored.messages||[];versions=history;
   restoreDateInputs(stored);$('#weekly-hours').value=stored.weeklyHours||plan.schedule?.hours||6;
-  clearAdjustment();renderPlan();renderReviewHistory();renderChatHistory();return true;
+  $('#adjust-budget').value=$('#weekly-hours').value;closeAdjustmentPanel();$('#plan-settings').open=false;renderPlan();renderReviewHistory();renderChatHistory();return true;
 }
 function renderVersions() {
   $('#plan-versions').hidden=!versions.length;
@@ -98,10 +98,10 @@ function renderVersions() {
 }
 function showGeneratedPreview(result) {
   generatedPreview=result;
-  $('#generation-preview').innerHTML=`<h3>新计划预览 · ${result.weeks.length}周</h3><p>${esc(result.summary)}</p><p>${esc(result.schedule?.note||'')}</p>`+result.weeks.map((w,i)=>`<p><strong>W${String(i+1).padStart(2,'0')} · ${esc(w.title)}</strong><br><span class="quiet">${esc(w.start)} — ${esc(w.end)} · ${Math.round(w.tasks.reduce((n,t)=>n+t.hours,0)*100)/100}h</span></p>`).join('')+'<p class="quiet">应用后自动归档当前计划及成果，不会删除旧记录。</p><button type="button" class="primary" id="apply-generated">应用新计划</button> <button type="button" class="secondary" id="discard-generated">取消</button>';
+  $('#generation-preview').innerHTML=`<h3>新计划预览 · ${result.weeks.length}周</h3><p>${esc(result.summary)}</p><details class="fold-card"><summary>查看逐周安排</summary><p>${esc(result.schedule?.note||'')}</p>`+result.weeks.map((w,i)=>`<p><strong>W${String(i+1).padStart(2,'0')} · ${esc(w.title)}</strong><br><span class="quiet">${esc(w.start)} — ${esc(w.end)} · ${Math.round(w.tasks.reduce((n,t)=>n+t.hours,0)*100)/100}h</span></p>`).join('')+'</details><p class="quiet">应用后自动归档当前计划及成果，不会删除旧记录。</p><button type="button" class="primary" id="apply-generated">应用新计划</button> <button type="button" class="secondary" id="discard-generated">取消</button>';
   $('#generation-preview').hidden=false;
   $('#discard-generated').addEventListener('click',()=>{generatedPreview=null;$('#generation-preview').hidden=true;});
-  $('#apply-generated').addEventListener('click',()=>{if(!generatedPreview||busy)return;if(generatedSettings!==null && generatedSettings!==generationSettings()){clearGeneratedPreview();notify('日期、预算或画像已变化，请重新生成。');return;}const next=generatedPreview,history=[...versions];if(plan)history.push(archiveCurrent());const state={plan:next,completed:{},reviews:[],submissionDrafts:{},messages:[...messages],planStart:next.schedule?.start||next.weeks[0].start,planEnd:next.schedule?.end||next.weeks.at(-1).end,weeklyHours:next.schedule?.hours||Number($('#weekly-hours').value)};if(commitState(state,history)){generatedPreview=null;$('#generation-preview').hidden=true;notify('新计划已应用，旧版及成果可在历史版本中恢复。');}});
+  $('#apply-generated').addEventListener('click',()=>{if(!generatedPreview||busy)return;if(generatedSettings!==null && generatedSettings!==generationSettings()){clearGeneratedPreview();notify('生成条件已变化，请重新生成。');return;}const next=generatedPreview,history=[...versions];if(plan)history.push(archiveCurrent());const state={plan:next,completed:{},reviews:[],submissionDrafts:{},messages:[...messages],planStart:next.schedule?.start||next.weeks[0].start,planEnd:next.schedule?.end||next.weeks.at(-1).end,weeklyHours:next.schedule?.hours||Number($('#weekly-hours').value)};if(commitState(state,history)){generatedPreview=null;$('#generation-preview').hidden=true;notify('新计划已应用，旧版及成果可在历史版本中恢复。');$('#week-focus').scrollIntoView?.({block:'start'});}});
 }
 function statusForWeek(week) {return window.WorkspaceData?window.WorkspaceData.weekStatus(week,completed,reviews):(week.tasks.every(t=>completed[t.id])?'自报完成 · 待验收':'进行中');}
 function restore() {
@@ -116,11 +116,14 @@ async function api(url, body, externalController=null) {
 function resourceLink(r) { return `<a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${esc(r.title)} ↗</a>`; }
 function renderPlan() {
   if(!plan) return;
+  if ($('#all-weeks').hidden) $('#plan-settings').open = false;
+  $('#all-weeks').hidden = false;
   renderVersions();
   window.PlanCalendar?.setPlan?.(contestId,plan,completed,reviews);
   renderWeekFocus();
+  populateAdjustmentTasks();
   renderSubmissionTasks();
-  $('#adjust-panel').hidden = false;
+
   const growth=plan.schedule?.growth_memory;
   const growthNote=growth?`<div class="growth-summary"><strong>本次计划参考了成长记录</strong><p>${esc(growth.sources.map(s=>s.name).join('、'))} · 最近28天 ${growth.logged_days} 天记录</p><p>${esc(growth.reason)} 原预算 ${esc(growth.requested_hours)}h / 本计划 ${esc(growth.recommended_hours)}h 每周。</p><p class="quiet">练习记录用于安排训练，不代表已经掌握新竞赛的专项技能。</p></div>`:'';
   const expandedWeeks = new Set(Array.from(document.querySelectorAll('.week-fold[open]')).map(el=>el.dataset.week));
@@ -134,7 +137,7 @@ function renderPlan() {
   document.querySelectorAll('[data-task]').forEach(el => el.addEventListener('change', () => { completed[el.dataset.task] = el.checked; clearAdjustment(); save(); renderPlan(); }));
 }
 let generationController=null, failedPlanMode=null, generationCancelled=false, generatedSettings=null;
-function generationSettings(){return JSON.stringify({profile:profile(),start:$('#plan-start').value,end:$('#plan-end').value,hours:$('#weekly-hours').value,growth:$('#use-growth-memory').checked});}
+function generationSettings(){return JSON.stringify({profile:profile(),start:$('#plan-start').value,end:$('#plan-end').value,hours:$('#weekly-hours').value,team:teamProgress(),growth:$('#use-growth-memory').checked});}
 function clearGeneratedPreview(){generatedPreview=null;generatedSettings=null;$('#generation-preview').hidden=true;}
 async function generate(mode) {
   if(!requireProfile() || busy || !budgetValid() || !dateRangeValid('plan',84)) return;
@@ -143,7 +146,7 @@ async function generate(mode) {
   generationController=new AbortController();generationCancelled=false;$('#cancel-generation').hidden=false;$('#retry-plan').hidden=true;
   busy = true; $('#generate').disabled = $('#template').disabled = true;
   const oldText = $('#generate').textContent; $('#generate').textContent = mode === 'ai' ? '正在拆解计划，请稍候…':'正在生成模板…';
-  try {const result=await api(`/api/plan?mode=${mode}&contest_id=${encodeURIComponent(contestId)}`,{...profile(),growth_logs:growthLogs,start_date:$('#plan-start').value,end_date:$('#plan-end').value,weekly_hours:Number($('#weekly-hours').value)},generationController);failedPlanMode=null;if(settings!==generationSettings()){notify('日期、预算或画像已变化，请重新生成。');return;}generatedSettings=settings;showGeneratedPreview(result);$('#generation-preview').scrollIntoView({behavior:'smooth'});notify('新计划已生成，请预览后应用；当前计划未改变。');}
+  try {const result=await api(`/api/plan?mode=${mode}&contest_id=${encodeURIComponent(contestId)}`,{...profile(),team_progress:teamProgress(),growth_logs:growthLogs,start_date:$('#plan-start').value,end_date:$('#plan-end').value,weekly_hours:Number($('#weekly-hours').value)},generationController);failedPlanMode=null;if(settings!==generationSettings()){notify('生成条件已变化，请重新生成。');return;}generatedSettings=settings;showGeneratedPreview(result);$('#generation-preview').scrollIntoView({behavior:'smooth'});notify('新计划已生成，请预览后应用；当前计划未改变。');}
   catch(e) {failedPlanMode=mode;$('#retry-plan').hidden=false;notify(generationCancelled?'已停止生成，原计划保持不变。':e.message);} finally {generationController=null;$('#cancel-generation').hidden=true;busy=false;$('#generate').disabled=$('#template').disabled=false;$('#generate').textContent=oldText;}
 }
 function bubble(content, role) { const node = document.createElement('div'); node.className = `bubble ${role}`; node.textContent = content; $('#chat-log').appendChild(node); $('#chat-log').scrollTop = $('#chat-log').scrollHeight; return node; }
@@ -186,7 +189,7 @@ $('#cancel-chat').addEventListener('click',()=>{chatCancelled=true;chatControlle
 $('#clear-chat').addEventListener('click',()=>{if(chatController || !confirm('清空当前竞赛的聊天记录？备赛计划和进度会保留。'))return;messages=[];save();renderChatHistory();});
 $('#cancel-generation').addEventListener('click',()=>{generationCancelled=true;generationController?.abort();});
 $('#retry-plan').addEventListener('click',()=>{if(failedPlanMode)generate(failedPlanMode);});
-$('#generate').addEventListener('click', () => generate('ai'));
+$('#generate').addEventListener('click', () => generate(data?.configured === false ? 'template' : 'ai'));
 $('#template').addEventListener('click', () => generate('template'));
 $('#chat-form').addEventListener('submit', sendChat);
 $('#message').addEventListener('keydown', e => {if(e.key === 'Enter' && !e.shiftKey && !e.isComposing) {e.preventDefault(); $('#chat-form').requestSubmit();}});
@@ -197,10 +200,49 @@ $('#export').addEventListener('click', () => {
   text += '\n\n# 成果与评价记录\n\n' + reviews.map(r=>`## ${reviewTitle(r)} · ${verdictLabel[r.review.verdict] || r.review.verdict}\n${r.reviewed_at} · ${r.applied?'已应用下一步':'未应用调整'}\n\n提交成果：\n${r.submission}\n\n评价：${r.review.summary}\n` + r.review.criteria.map(c=>`- ${c.criterion}（${c.status}）：${c.feedback}\n  证据：${c.evidence || '未提供'}\n`).join('')).join('\n');
   const url = URL.createObjectURL(new Blob([text],{type:'text/markdown;charset=utf-8'})); const a=document.createElement('a'); a.href=url; a.download=`${data.contest.name}备赛计划.md`; a.click(); setTimeout(() => URL.revokeObjectURL(url),1000);
 });
+function setupTeamProgress() {
+  const stage = $('#team-stage');
+  const results = $('#team-results');
+  const remaining = $('#team-remaining');
+  const key = 'jingxu-team-progress-v1-' + contestId;
+  function syncVisibility() {
+    $('#team-details').hidden = stage.value !== 'underway';
+  }
+  try {
+    const saved = JSON.parse(localStorage.getItem(key));
+    if (saved) {
+      stage.value = saved.stage === 'underway' ? 'underway' : 'start';
+      results.value = saved.results || '';
+      remaining.value = saved.remaining || '';
+    }
+  } catch { notify('无法读取团队进度。'); }
+  syncVisibility();
+  function save() {
+    syncVisibility();
+    try {
+      localStorage.setItem(key, JSON.stringify({stage: stage.value, results: results.value, remaining: remaining.value}));
+    } catch { notify('团队进度无法保存到此浏览器。'); }
+  }
+  stage.addEventListener('change', save);
+  results.addEventListener('input', save);
+  remaining.addEventListener('input', save);
+}
+function teamProgress() {
+  if ($('#team-stage').value !== 'underway') return null;
+  const results = $('#team-results').value.trim();
+  const remaining = $('#team-remaining').value.trim();
+  return results || remaining ? {results, remaining} : null;
+}
+
 async function init() {
+  setupTeamProgress();
   $('#generate').disabled = $('#template').disabled = $('#send').disabled = true;
   try {
     data = await api(`/api/bootstrap?contest_id=${encodeURIComponent(contestId)}`);
+    if (data.configured === false) {
+      $('#generate').textContent = '生成模板计划';
+      $('#template').hidden = true;
+    }
     const c = data.contest;
     const schedule = data.schedule;
     $('#schedule-summary').textContent = schedule ? `系统建议 ${schedule.start || ProfileStore.today()} 至 ${schedule.end || "所选结束日期"} · 每周 ${schedule.hours} 小时。可修改开始和结束日期。` : '';
@@ -228,7 +270,6 @@ async function init() {
     $('#contest-source').href = $('#timeline-source').href = c.source;
     $('#pending-note').textContent = c.pending;
     renderChatHistory();
-    $('#status').textContent = data.configured ? 'DeepSeek 已配置' : '模板体验 · AI 待配置';
     $('#learning-path').innerHTML = (c.learning_path || []).map(step=>{const resource=data.resources.find(r=>r.id===step.resource_id);return `<li><strong>${esc(step.stage)}</strong><p>${esc(step.action)}</p><p class="quiet">验收：${esc(step.deliverable)}</p>${resource?resourceLink(resource):''}</li>`}).join('');
     $('#resource-list').innerHTML = data.resources.map(r => `<a class="resource-card" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer"><span>${esc(r.type)}${r.type === '精选教程' ? ' · 2026-10-11核对' : ''} ↗</span><h3>${esc(r.title)}</h3><p>${esc(r.note)}</p></a>`).join('');
     $('#timeline').innerHTML = c.timeline.map(t => `<div class="timeline-item"><span class="date-chip">${eventDateLabel(t)}</span><h3>${esc(t.label)}</h3><strong>${t.year} 年 · ${esc(t.date)}</strong><p>${esc(t.detail)}</p><a href="${esc(t.source)}" target="_blank" rel="noopener noreferrer">${esc(t.source_label)} ↗</a></div>`).join('');
@@ -236,7 +277,7 @@ async function init() {
     renderPlan();
     renderReviewHistory();
     $('#generate').disabled = $('#template').disabled = $('#send').disabled = false;
-  } catch(e) {$('#status').textContent = '服务连接失败'; notify(e.message);}
+  } catch(e) {notify(e.message);}
 }
 
 function eventDateLabel(event) {
@@ -251,17 +292,135 @@ function clearAdjustment() { clearReviewPreview(); adjustmentPreview=null; $('#a
 $('#weekly-hours').addEventListener('input', ()=>{clearAdjustment();clearGeneratedPreview();});
 $('#weekly-hours').addEventListener('change', ()=>{if(budgetValid())save();});
 ['#adjust-start','#adjust-end'].forEach(selector=>{for(const event of ['input','change'])$(selector).addEventListener(event,clearAdjustment);});
+function pendingTasks() {
+  return (plan?.weeks || []).flatMap(w => w.tasks).filter(t => !completed[t.id]);
+}
+function populateAdjustmentTasks() {
+  const tasks = pendingTasks();
+  const select = $('#adjust-task');
+  const previous = select.value;
+  if (!tasks.length) closeAdjustmentPanel();
+  select.innerHTML = '<option value="">仅调整日期与预算</option>' + tasks.map(t =>
+    `<option value="${esc(t.id)}">${esc(t.title)}</option>`).join('');
+  select.value = tasks.some(t => t.id === previous) ? previous : '';
+  $('#open-progress-adjust').hidden = !tasks.length;
+  showAdjustmentTask();
+}
+function showAdjustmentTask() {
+  const task = pendingTasks().find(t => t.id === $('#adjust-task').value);
+  $('#adjust-task-fields').hidden = !task;
+  $('#adjust-work').value = task?.title || '';
+  $('#adjust-hours').value = task?.hours ?? '';
+}
+function readTaskUpdate() {
+  if (!$('#adjust-task').value) return null;
+  return {task_id: $('#adjust-task').value, remaining_work: $('#adjust-work').value.trim(), hours: Number($('#adjust-hours').value)};
+}
+$('#manual-revision').addEventListener('toggle', () => {
+  if ($('#manual-revision').open && !$('#adjust-budget').value) $('#adjust-budget').value=$('#weekly-hours').value;
+});
+$('#adjust-budget').addEventListener('input',clearAdjustment);
+function adjustmentBudget() { return Number($('#adjust-budget').value || $('#weekly-hours').value); }
+function adjustmentSnapshot() {
+  return JSON.stringify({plan, completed, hours: adjustmentBudget(), start: $('#adjust-start').value,
+    end: $('#adjust-end').value, task: readTaskUpdate()});
+}
+function refreshAdjustmentContext() {
+  const team = teamProgress();
+  const note = $('#adjust-team-context');
+  note.hidden = !team;
+  note.textContent = team ? [team.results, team.remaining].filter(Boolean).join(' · ') : '';
+}
+function closeAdjustmentPanel() {
+  clearAdjustment();
+  $('#revision-result').textContent = '';
+  $('#adjust-panel').hidden = true;
+  $('#open-progress-adjust').setAttribute?.('aria-expanded','false');
+}
+$('#close-adjust').addEventListener('click',closeAdjustmentPanel);
+$('#open-progress-adjust').addEventListener('click', () => {
+  if (!$('#adjust-panel').hidden) { closeAdjustmentPanel(); return; }
+  const task = window.WeekFocus.tasks(plan,completed,ProfileStore.today(),1)[0];
+  if (!task) return;
+  clearAdjustment();
+  $('#adjust-task').value='';
+  showAdjustmentTask();
+  refreshAdjustmentContext();
+  $('#adjust-panel').hidden=false;
+  $('#open-progress-adjust').setAttribute('aria-expanded','true');
+  $('#manual-revision').open = false;
+  $('#plan-feedback').focus();
+});
+function revisionInputs() {
+  return {plan, completed, feedback: $('#plan-feedback').value.trim(), team: teamProgress(),
+    language: document.documentElement.lang === 'en' ? 'en' : 'zh-CN'};
+}
+$('#plan-feedback').addEventListener('input', () => { $('#revision-result').textContent = ''; });
+$('#suggest-revision').addEventListener('click', async () => {
+  const input = revisionInputs();
+  const result = $('#revision-result');
+  if (!input.feedback) { $('#plan-feedback').focus(); return; }
+  if (busy) return;
+  if (!data?.configured) { result.textContent='AI 尚未配置，可在下方手动调整。'; return; }
+  const snapshot = JSON.stringify(input);
+  const current = () => !$('#adjust-panel').hidden && snapshot === JSON.stringify(revisionInputs());
+  busy = true;
+  $('#suggest-revision').disabled = true;
+  result.textContent = '正在根据你的反馈拟定方案…';
+  try {
+    const proposal = await api('/api/plan/revise', input);
+    if (!current()) { result.textContent='计划或反馈已变化，请重新生成方案。'; return; }
+    result.innerHTML = `<h4>建议这样改</h4><p>${esc(proposal.reason)}</p>`;
+    for (const change of proposal.changes) {
+      const {before, after, old_week, new_week} = change;
+      result.innerHTML += `<article class="preview-week"><strong>${esc(before.title)}</strong>
+        ${before.title !== after.title ? `<p>→ ${esc(after.title)}</p>` : ''}
+        ${before.hours !== after.hours ? `<p>${esc(before.hours)} h → ${esc(after.hours)} h</p>` : ''}
+        ${old_week !== new_week ? `<p>W${esc(old_week)} → W${esc(new_week)}</p>` : ''}
+        ${before.deliverable !== after.deliverable ? `<p>${esc(before.deliverable)} → ${esc(after.deliverable)}</p>` : ''}</article>`;
+    }
+    if (!proposal.changes.length) return;
+    result.innerHTML += '<div class="form-actions"><button type="button" class="primary" id="accept-revision">应用这个方案</button><button type="button" class="secondary" id="discard-revision">放弃方案</button></div>';
+    $('#discard-revision').addEventListener('click', () => { result.textContent=''; });
+    $('#accept-revision').addEventListener('click', () => {
+      if (!current()) { result.textContent='计划或反馈已变化，请重新生成方案。'; return; }
+      if (commitState({...activeState(),plan:proposal.plan}, [...versions,archiveCurrent()])) {
+        $('#plan-feedback').value='';
+        notify('修改已应用，旧计划已归档。');
+      }
+    });
+  } catch (error) { result.textContent=error.message; }
+  finally { busy=false; $('#suggest-revision').disabled=false; }
+});
+$('#adjust-task').addEventListener('change', () => { clearAdjustment(); showAdjustmentTask(); });
+for (const id of ['#adjust-work','#adjust-hours']) $(id).addEventListener('input', clearAdjustment);
+
+function adjustmentChanges(changes) {
+  if (!changes?.length) return '';
+  const row = c => `<article class="preview-week"><strong>${esc(c.title)}${c.title !== c.new_title ? ' → ' + esc(c.new_title) : ''}</strong>
+    ${c.hours !== c.new_hours ? `<p>${esc(c.hours)} h → ${esc(c.new_hours)} h</p>` : ''}
+    ${c.start !== c.new_start || c.end !== c.new_end ? `<p>${esc(c.start)} – ${esc(c.end)} → ${esc(c.new_start)} – ${esc(c.new_end)}</p>` : ''}</article>`;
+  const selected = changes.find(c => c.title !== c.new_title || c.hours !== c.new_hours) || changes[0];
+  const other = changes.filter(c => c !== selected);
+  return row(selected) + (other.length ? `<details><summary>其他受影响的任务 (${other.length})</summary>${other.map(row).join('')}</details>` : '');
+}
 $('#preview-adjust').addEventListener('click', async ()=>{
-  if(!plan || busy || !budgetValid() || !dateRangeValid('adjust',448)) return;
-  const snapshot=JSON.stringify({plan,completed,hours:$('#weekly-hours').value,start:$('#adjust-start').value,end:$('#adjust-end').value});
+  if(!plan || busy || !$('#adjust-budget').reportValidity() || !dateRangeValid('adjust',448)) return;
+  const taskUpdate = readTaskUpdate();
+  if (taskUpdate && (!taskUpdate.remaining_work || !taskUpdate.hours || !$('#adjust-hours').reportValidity())) {
+    notify('请填写剩余工作和预计工时。'); return;
+  }
+  clearAdjustment();
+  const snapshot=adjustmentSnapshot();
   busy=true; $('#preview-adjust').disabled=true; $('#generate').disabled=$('#template').disabled=true;
   try {
-    adjustmentPreview=await api('/api/plan/adjust',{contest_id:contestId,plan,completed,weekly_hours:Number($('#weekly-hours').value),start:$('#adjust-start').value,end:$('#adjust-end').value});
-    if(snapshot!==JSON.stringify({plan,completed,hours:$('#weekly-hours').value,start:$('#adjust-start').value,end:$('#adjust-end').value})) {clearAdjustment();notify('预算或进度已变化，请重新预览。');return;}
+    adjustmentPreview=await api('/api/plan/adjust',{task_update:taskUpdate,contest_id:contestId,plan,completed,weekly_hours:adjustmentBudget(),start:$('#adjust-start').value,end:$('#adjust-end').value});
+    if(snapshot!==adjustmentSnapshot()) {clearAdjustment();notify('预算或进度已变化，请重新预览。');return;}
     const next=adjustmentPreview.plan;
-    $('#adjust-preview').innerHTML=`<h3>调整预览</h3><p>${esc(adjustmentPreview.summary)}</p><p class="quiet">新的训练结束日期：${esc(next.schedule.end)}。应用前原计划保持不变。</p>`+next.weeks.filter(w=>!w.history).map(w=>`<article class="preview-week"><strong>${esc(w.start)} — ${esc(w.end)}</strong><ul>${w.tasks.map(t=>`<li>${esc(t.title)} · ${Math.round(t.hours*100)/100}h<p class="quiet">${esc(t.deliverable)}</p></li>`).join('')}</ul></article>`).join('')+'<div class="form-actions"><button class="primary" id="apply-adjust" type="button">应用调整</button><button class="secondary" id="cancel-adjust" type="button">取消</button></div>';
+    next.schedule.competition_deadline=next.schedule.end;
+    $('#adjust-preview').innerHTML=`<h3>调整预览</h3><p>${esc(adjustmentPreview.summary)}</p><p class="quiet">新的训练结束日期：${esc(next.schedule.end)}。应用前原计划保持不变。</p>`+adjustmentChanges(adjustmentPreview.changes)+'<details><summary>查看调整后的各周安排</summary>'+next.weeks.filter(w=>!w.history).map(w=>`<article class="preview-week"><strong>${esc(w.start)} — ${esc(w.end)}</strong><ul>${w.tasks.map(t=>`<li>${esc(t.title)} · ${Math.round(t.hours*100)/100}h<p class="quiet">${esc(t.deliverable)}</p></li>`).join('')}</ul></article>`).join('')+'</details><div class="form-actions"><button class="primary" id="apply-adjust" type="button">应用调整</button><button class="secondary" id="cancel-adjust" type="button">取消</button></div>';
     $('#adjust-preview').hidden=false;
-    $('#apply-adjust').addEventListener('click',()=>{if(!adjustmentPreview)return;const next=adjustmentPreview.plan,history=[...versions,archiveCurrent()];const state={...activeState(),plan:next,completed:adjustmentPreview.completed,planStart:next.schedule.start,planEnd:next.schedule.end,weeklyHours:next.schedule.hours};if(commitState(state,history))notify('调整已应用，已完成任务已保留，原计划已归档。');});
+    $('#apply-adjust').addEventListener('click',()=>{if(!adjustmentPreview)return;if(snapshot!==adjustmentSnapshot()){clearAdjustment();notify('预算或进度已变化，请重新预览。');return;}const next=adjustmentPreview.plan,history=[...versions,archiveCurrent()];const state={...activeState(),plan:next,completed:adjustmentPreview.completed,planStart:next.schedule.start,planEnd:next.schedule.end,weeklyHours:next.schedule.hours};if(commitState(state,history))notify('调整已应用，已完成任务已保留，原计划已归档。');});
     $('#cancel-adjust').addEventListener('click',clearAdjustment);
   } catch(e) {clearAdjustment();notify(e.message);} finally {busy=false;$('#preview-adjust').disabled=false;$('#generate').disabled=$('#template').disabled=false;}
 });
@@ -273,7 +432,24 @@ window.addEventListener('storage', e => { if(e.key === 'jingxu-profile-v1') refr
 function renderWeekFocus(){
  const root=$('#week-focus-list'); if(!root||!window.WeekFocus)return;
  const next=window.WeekFocus.tasks(plan,completed,ProfileStore.today());
- root.innerHTML=next.length?next.map(t=>`<article class="focus-task"><div><span class="tag">${esc(t.state)}</span><strong>${esc(t.title)}</strong><p class="quiet">${esc(t.week)} · ${esc(t.hours)} 小时</p><details><summary>完成标准</summary><p>${esc(t.deliverable)}</p></details></div></article>`).join('')+`<button type="button" class="secondary" data-submit-week="${plan.weeks.findIndex(w=>w.tasks.some(t=>t.id===next[0].id))}">提交本周成果 · 整周验收</button>`:(plan.weeks.some(w=>statusForWeek(w)!=='验收通过')?`<p class="quiet">任务已自报完成，还有训练周待验收。请提交成果或查看已有反馈。</p><button type="button" class="secondary" data-submit-week="${plan.weeks.findIndex(w=>statusForWeek(w)!=='验收通过')}">进入整周验收</button>`:'<p class="quiet">全部训练周已验收通过。</p>');
+ const first=next[0];
+ const upcoming=next.slice(1);
+ root.innerHTML=first ? `<article class="next-task">
+   <p class="quiet">${esc(first.state)} · ${esc(first.hours)} h</p>
+   <h3>${esc(first.title)}</h3>
+   ${first.deliverable.length > 100 ? `<details class="fold-card"><summary>查看完整交付要求</summary><p class="next-deliverable">${esc(first.deliverable)}</p></details>` : `<p class="next-deliverable">${esc(first.deliverable)}</p>`}
+   <button class="primary" type="button" id="finish-next-task">标记为完成</button>
+ </article>
+ ${upcoming.length ? `<details class="upcoming-tasks"><summary>接下来的任务</summary><ul>${upcoming.map(t=>`<li>${esc(t.title)} · ${esc(t.hours)} h</li>`).join('')}</ul></details>` : ''}
+ <button type="button" class="text-button" data-submit-week="${plan.weeks.findIndex(w=>w.tasks.some(t=>t.id===first.id))}">提交本周成果</button>`:(plan.weeks.some(w=>statusForWeek(w)!=='验收通过')?`<p class="quiet">任务已自报完成，还有训练周待验收。请提交成果或查看已有反馈。</p><button type="button" class="secondary" data-submit-week="${plan.weeks.findIndex(w=>statusForWeek(w)!=='验收通过')}">进入整周验收</button>`:'<p class="quiet">全部训练周已验收通过。</p>');
+
+ if(first) $('#finish-next-task').addEventListener('click',()=>{
+   completed[first.id]=true;
+   if(!save()){delete completed[first.id];return;}
+   clearAdjustment();
+   renderPlan();
+ });
+
 }
 
 
@@ -302,17 +478,19 @@ function selectSubmission() {
   const week=plan?.weeks?.[selectedWeekIndex()];
   $('#submission-standard').textContent=week?'本周整体验收要求：\n'+week.tasks.map((t,i)=>`${i+1}. ${t.title}\n${t.deliverable}`).join('\n\n')+(week.review_focus?`\n\n本周改进重点：${week.review_focus.title}\n${week.review_focus.deliverable}`:''):'请先生成计划，再选择一周。';
   $('#submission-text').value=week?submissionDrafts[weekKey(week)]||'':'';
+  $('#review-entry').hidden=!week?.tasks.length;
   $('#submit-review').disabled=!week?.tasks.length||Boolean(reviewController);
 }
 function openWeekSubmission(index) {
   location.hash='#submission-panel';window.AppNavigation?.sync();
   $('#submission-task').value=`week-${index}`;selectSubmission();
+  $('#review-entry').open=true;
   $('#submission-panel').scrollIntoView({behavior:'smooth'});$('#submission-text').focus();
 }
 function feedbackHTML(record) {
   const r=record.review;
   return `<h3>${esc(reviewTitle(record))} · ${esc(verdictLabel[r.verdict]||r.verdict)}</h3><p>${esc(r.summary)}</p><p class="quiet">${esc(record.reviewed_at)} · AI 根据提交文本给出的训练反馈，供学习参考。</p>`+
-    r.criteria.map(c=>`<article class="review-criterion"><strong>${esc(c.criterion)} · ${esc((r.verdict==='review_incomplete'?{met:'已保留证据',partial:'部分反馈',missing:'待评价'}:{met:'已有证据',partial:'部分满足',missing:'缺少证据'})[c.status]||c.status)}</strong><p>${esc(c.feedback)}</p>${c.evidence?`<blockquote>提交证据：${esc(c.evidence)}</blockquote>`:''}</article>`).join('');
+    '<details class="resource-fold"><summary>查看逐项评价</summary>'+r.criteria.map(c=>`<article class="review-criterion"><strong>${esc(c.criterion)} · ${esc((r.verdict==='review_incomplete'?{met:'已保留证据',partial:'部分反馈',missing:'待评价'}:{met:'已有证据',partial:'部分满足',missing:'缺少证据'})[c.status]||c.status)}</strong><p>${esc(c.feedback)}</p>${c.evidence?`<blockquote>提交证据：${esc(c.evidence)}</blockquote>`:''}</article>`).join('')+'</details>';
 }
 function matchingWeek(a,b) {return a&&b&&a.start===b.start&&a.end===b.end&&JSON.stringify(a.tasks)===JSON.stringify(b.tasks);}
 function canApplySaved(record) {return !record.applied&&['passed','needs_revision'].includes(record.review.verdict)&&record.week&&plan?.weeks.some(w=>matchingWeek(w,record.week))&&reviews.slice().reverse().find(r=>matchingWeek(r.week,record.week))?.id===record.id;}
@@ -327,7 +505,12 @@ function renderReviewHistory() {
     if(commitState({...activeState(),plan:nextPlan,completed:nextCompleted,reviews:nextReviews},versions))notify('已应用已保存的反馈，无需重复调用AI。');
   }));
 }
-$('#submission-task').addEventListener('change',selectSubmission);
+$('#submission-task').addEventListener('change',()=>{
+  selectSubmission();
+  clearReviewPreview();
+  $('#review-feedback').innerHTML='';
+  $('#review-status').textContent='';
+});
 $('#collect-week-logs').addEventListener('click',()=>{
   const week=plan?.weeks?.[selectedWeekIndex()];if(!week){notify('请先选择一周。');return;}
   try{const logs=window.GrowthMemory?.load()||[],summary=window.WorkspaceData?.weeklyJournal(logs,contestId,week)||'';if(!summary){notify('该周还没有当前竞赛的每日记录。可以先记录进度，或直接粘贴成果。');return;}
@@ -368,6 +551,8 @@ $('#submission-form').addEventListener('submit',async event=>{
   try {
     const result=await api('/api/weeks/review',{contest_id:contestId,profile:profile(),plan,week_index:weekIndex,completed,submission:text,weekly_hours:Number($('#weekly-hours').value)},reviewController);
     reviews=[...reviews,result.record].slice(-50);save();renderReviewHistory();
+    if(selectedWeekIndex()!==weekIndex) return;
+    $('#review-entry').open=result.record.review.verdict==='review_incomplete';
     $('#review-feedback').innerHTML=feedbackHTML(result.record)+`<p>${esc(result.proposal_note)}</p>`;
     $('#review-status').textContent=result.record.review.verdict==='review_incomplete'?'AI评价未完整生成；成果与部分反馈已保存，点击提交可重新评价。':'评价已保存。计划和完成状态尚未改变。';
     if(result.proposal&&snapshot===reviewSnapshot()) {
@@ -375,7 +560,26 @@ $('#submission-form').addEventListener('submit',async event=>{
       const proposal=result.proposal;
       const reviewedWeek=proposal.plan.weeks[proposal.week_index];
       const focus=reviewedWeek?.review_focus;
-      $('#review-feedback').innerHTML+=`<div class="week-review-focus"><h3>整周反馈应用预览</h3><p>${esc(proposal.summary)}</p>${focus?`<strong>${esc(focus.title)}</strong><p>${esc(focus.deliverable)}</p><p class="quiet">建议在本周预算内分配 ${esc(focus.hours)} 小时，不额外增加工时。</p>`:''}</div><button id="apply-review" class="primary" type="button">应用本周反馈</button>`;
+      $('#review-feedback').innerHTML+=`<div class="week-review-focus"><h3>是否应用本周反馈？</h3><p>${esc(proposal.summary)}</p>${focus?`<strong>${esc(focus.title)}</strong><p>${esc(focus.deliverable)}</p><p class="quiet">建议在本周预算内分配 ${esc(focus.hours)} 小时，不额外增加工时。</p>`:''}</div><button id="apply-review" class="primary" type="button">${result.record.review.verdict==='passed'?'确认本周已完成':'采用本周改进建议'}</button> <button type="button" class="text-button" id="keep-review-plan">维持原计划</button>`;
+      const record=result.record;
+      if (pendingTasks().length) {
+        $('#review-feedback').innerHTML+='<p><button id="revise-from-review" class="text-button" type="button">根据验收结果调整后续计划</button></p>';
+        $('#revise-from-review').addEventListener('click',()=>{
+          if(snapshot!==reviewSnapshot()){notify('计划已变化，请重新查看当前周。');return;}
+          location.hash='#plan';window.AppNavigation?.sync();
+          $('#adjust-panel').hidden=false;
+          $('#open-progress-adjust').setAttribute('aria-expanded','true');
+          $('#manual-revision').open=false;
+          const note=[reviewTitle(record),record.review.summary,record.review.improvement?.title,record.review.improvement?.deliverable].filter(Boolean).join(' · ');
+          $('#plan-feedback').value=note.slice(0,1500);
+          $('#revision-result').textContent='';
+          $('#plan-feedback').focus();
+        });
+      }
+      $('#keep-review-plan').addEventListener('click',()=>{
+        clearReviewPreview();$('#review-feedback').innerHTML=feedbackHTML(record);
+        $('#review-status').textContent='已保存验收结果，继续按原计划训练。';
+      });
       $('#apply-review').addEventListener('click',()=>{
         refreshProfile();
         if(!reviewPreview||reviewPreview.snapshot!==reviewSnapshot()){clearReviewPreview();notify('计划、画像或预算已变化，请重新评价后再应用。');return;}

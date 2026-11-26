@@ -2,27 +2,28 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>竞序 · 热门竞赛时间轴</title>
+  <script defer src="/static/language.js?v=20261126-site"></script><title>竞序 · 热门竞赛时间轴</title>
   <meta name="description" content="查看未来十二个月的竞赛报名时间，填写画像并开始备赛。">
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=20261030-ux-1">
+  <link rel="stylesheet" href="/static/style.css?v=20261126-deadline-1">
   <link rel="stylesheet" href="/static/calendar.css?v=20261030-ux-1">
   <script src="/static/profile-store.js" defer></script>
   <script src="/static/workspace-data.js?v=20261030-ux-1" defer></script>
-  <script src="/static/plan-calendar.js?v=20261030-ux-1" defer></script>
-  <script src="/static/growth-memory.js?v=20261030-ux-1" defer></script>
+  <script src="/static/plan-calendar.js?v=20261126-site" defer></script>
+  <script src="/static/growth-memory.js?v=20261126-site" defer></script>
   <script src="/static/timeline.js" defer></script>
   <script src="/static/disciplines.js?v=20261030-ux-1" defer></script>
   <script src="/static/contest-library.js?v=20261030-ux-1" defer></script>
-  <script src="/static/app-navigation.js?v=20261030-ux-1" defer></script>
-  <script src="/static/home.js?v=20261030-ux-1" defer></script>
+  <script src="/static/app-navigation.js?v=20261126-sidebar-lang" defer></script>
+  <script src="/static/home.js?v=20261126-site" defer></script>
+<link rel="stylesheet" href="/static/site-layout.css?v=20261126-levels">
 </head>
 <body class="home-page">
-  <aside class="sidebar" id="app-sidebar"></aside>
+  <aside class="sidebar" id="app-sidebar"><button type="button" id="language-switch" lang="en" aria-label="Switch to English">English</button></aside>
   <main>
-    <header><div><span class="eyebrow">竞序 · 大学生备赛助手</span><h1 id="page-title">发现适合你的竞赛</h1><p id="page-description">浏览赛事、查看推荐，选择想参加的比赛。</p></div></header>
+    <header class="page-banner"><div><h1 id="page-title">发现适合你的竞赛</h1><p id="page-description">浏览赛事、查看推荐，选择想参加的比赛。</p></div></header>
 <nav id="discovery-tabs" class="workspace-tabs" aria-label="发现赛事视图"><a href="#all-contests" data-discovery-tab="all-contests">全部赛事</a><a href="#annual-timeline" data-discovery-tab="annual-timeline">参考时间轴</a><a href="#recommendations" data-discovery-tab="recommendations">适合我的</a><a href="#my-contests" data-discovery-tab="my-contests">收藏</a></nav><section class="panel" id="discovery-filters">      <div class="discipline-filters" role="group" aria-label="筛选专业方向"><button type="button" data-discipline="全部" aria-pressed="false">全部</button><button type="button" data-discipline="文" aria-pressed="false">文</button><button type="button" data-discipline="理" aria-pressed="false">理</button><button type="button" data-discipline="医" aria-pressed="false">医</button><button type="button" data-discipline="工" aria-pressed="false">工</button><button type="button" data-discipline="跨专业" aria-pressed="false">跨专业</button></div><label class="favorites-toggle"><input type="checkbox" id="favorite-only"> 只看收藏</label><p id="discipline-note" class="quiet"></p></section>
-    <section class="panel" id="all-contests"><div class="section-heading"><h2>全部赛事</h2><span id="contest-count" class="quiet"></span></div><label for="contest-search">搜索赛事、方向或关键词</label><input id="contest-search" type="search" maxlength="100" placeholder="例如：挑战杯、机械、编程"><div id="all-contest-list" class="recommend-grid"></div></section>
+    <section class="panel" id="all-contests"><div class="section-heading"><h2>全部赛事</h2><span id="contest-count" class="quiet"></span></div><label for="contest-search">搜索赛事、方向或关键词</label><input id="contest-search" type="search" maxlength="100" placeholder="例如：挑战杯、机械、编程"><div id="all-contest-list" class="recommend-grid"></div><details class="fold-card" id="contest-overflow" hidden><summary>更多匹配赛事</summary><div class="recommend-grid" id="more-contest-list"></div></details></section>
     <section class="panel simple-calendar" id="annual-timeline" aria-labelledby="calendar-title">
       <div class="section-heading"><div><span class="eyebrow">01 / COMPETITIONS</span><h2 id="calendar-title">竞赛时间轴</h2></div><span id="date-range" class="quiet"></span></div>
       <p class="quiet">按往年报名、校赛或提交月份参考，非当届截止日期</p>
@@ -35,7 +36,7 @@
       <section class="panel" id="profile"><div class="section-heading"><div><span class="eyebrow">02 / YOUR PROFILE</span><h2>填写我的画像</h2></div><span class="quiet">仅保存在当前浏览器</span></div>
         <form id="profile-form"><div class="form-grid">
           <label>专业<input name="major" placeholder="例如：计算机科学与技术" maxlength="100" required></label>
-          <label>年级<select name="grade"><option>大一</option><option selected>大二</option><option>大三</option><option>大四</option><option>其他</option></select></label>
+          <label>年级<select name="grade"><option value="大一">大一</option><option value="大二" selected>大二</option><option value="大三">大三</option><option value="大四">大四</option><option value="其他">其他</option></select></label>
           <label class="wide">能力<textarea name="skills" placeholder="例如：Python 入门，学过高等数学，擅长写作" maxlength="500" rows="3" required></textarea></label>
         </div><div class="form-actions"><button class="primary" type="submit">保存画像</button><span id="profile-status" role="status" aria-live="polite"></span></div><p class="quiet">所有竞赛共用这份画像，备赛计划和完成进度分别保存。</p></form>
       </section>

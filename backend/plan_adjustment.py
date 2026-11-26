@@ -28,7 +28,14 @@ class ExistingPlan(BaseModel):
     weeks: list[ExistingWeek] = Field(min_length=1, max_length=64)
     model_config = {'extra': 'allow'}
 
+class TaskUpdate(BaseModel):
+    task_id: str = Field(min_length=1, max_length=100)
+    remaining_work: str = Field(min_length=1, max_length=150, pattern=r'\S')
+    hours: float = Field(gt=0, le=40, allow_inf_nan=False)
+
+
 class AdjustmentRequest(BaseModel):
+    task_update: TaskUpdate | None = None
     contest_id: str = Field(max_length=50)
     plan: ExistingPlan
     completed: dict[str, bool]
@@ -51,6 +58,12 @@ def adjust_plan(body, today):
     remaining = [deepcopy(t) for t in tasks if t['id'] not in completed]
     if not remaining:
         raise ValueError('全部任务已完成，无需调整。')
+    update = body.task_update
+    if update:
+        target = next((task for task in remaining if task['id'] == update.task_id), None)
+        if target is None:
+            raise ValueError('请选择当前计划内的未完成任务。')
+        target.update(title=update.remaining_work.strip(), hours=update.hours)
     history = []
     for week in original['weeks']:
         done = [deepcopy(t) for t in week['tasks'] if t['id'] in completed]
@@ -88,6 +101,10 @@ def adjust_plan(body, today):
         capacities = [Decimal(str(budget))] * count
     if len(history)+len(windows) > 64:
         raise ValueError('历史记录与调整后的计划合计不能超过64周，请缩短日期范围。')
+    if update:
+        # Start with the remaining work and fill the earliest available weeks.
+        capacities = [Decimal(str(w['hours'])) for w in windows]
+    placements = {}
     groups = [[] for _ in windows]
     index, used = 0, Decimal(0)
     revision = uuid4().hex[:12]
@@ -111,6 +128,7 @@ def adjust_plan(body, today):
                 item['deliverable'] = task['deliverable'][:380]+' 分段持续推进同一交付物，记录本段成果；最后一段完成完整验收。'
                 item['source_task_id'] = task.get('source_task_id',task['id'])
             groups[week_index].append(item)
+            placements.setdefault(task['id'], []).append(windows[week_index])
     weeks = [{'title':f'调整后第{i+1}周：'+group[0]['title'][:80],
               'start':windows[i]['start'],'end':windows[i]['end'],'tasks':group}
              for i,group in enumerate(groups) if group]
@@ -127,4 +145,17 @@ def adjust_plan(body, today):
         schedule.pop('date_source',None)
     result['schedule']=schedule
     result['adjustment']={'remaining_hours':float(total),'remaining_weeks':len(weeks),'preserved_tasks':len(completed),'original_remaining_tasks':len(remaining)}
-    return {'plan':result,'completed':completed,'summary':f'保留{len(completed)}项已完成任务；{len(remaining)}项未完成任务共{total:g}小时，按每周不超过{budget:g}小时安排为{len(weeks)}周。所有未完成工作均保留。'}
+    changes = []
+    if update:
+        for week in original['weeks']:
+            for task in week['tasks']:
+                dates = placements.get(task['id'])
+                if not dates:
+                    continue
+                start, end = dates[0]['start'], dates[-1]['end']
+                selected = task['id'] == update.task_id
+                if selected or (week['start'], week['end']) != (start, end):
+                    changes.append(dict(title=task['title'], new_title=update.remaining_work.strip() if selected else task['title'],
+                                        hours=task['hours'], new_hours=update.hours if selected else task['hours'],
+                                        start=week['start'], end=week['end'], new_start=start, new_end=end))
+    return {'changes':changes,'plan':result,'completed':completed,'summary':f'保留{len(completed)}项已完成任务；{len(remaining)}项未完成任务共{total:g}小时，按每周不超过{budget:g}小时安排为{len(weeks)}周。所有未完成工作均保留。'}

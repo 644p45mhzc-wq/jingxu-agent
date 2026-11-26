@@ -46,7 +46,7 @@
   let catalog=[],summaryVersion=0;
   const $=s=>mount.querySelector(s),status=s=>{$('#growth-status').textContent=s;};
   mount.innerHTML=`<div class="section-heading"><div><span class="eyebrow">CROSS-COMPETITION MEMORY</span><h2>我的成长记录</h2></div><button type="button" class="text-button" id="growth-export">导出记录</button></div>
-    <p class="quiet">每天记录真实投入与进展，下次参加其他竞赛也能参考。每个竞赛每天一条，可修改；没有训练的日期也可记录休息。</p>
+    <p class="quiet">选好竞赛和日期，记下今天的投入与成果。</p>
     <div id="growth-stat-line" class="growth-summary" aria-live="polite"></div>
     <details class="resource-fold" open><summary>记录今天 / 补记进度</summary><form id="growth-form"><div class="form-grid">
       <label>竞赛<select id="growth-contest" required></select></label><label>日期<input id="growth-day" type="date" required></label>
@@ -68,7 +68,7 @@
     const version=++summaryVersion;
     try{
       const logs=load();
-      $('#growth-history').innerHTML=logs.slice(-Number($('#growth-history-limit').value||30)).reverse().map(log=>`<article class="growth-entry"><strong>${escape(log.day)} · ${escape(catalog.find(c=>c.id===log.contest_id)?.short||log.contest_id)}</strong><p>计划 ${escape(log.planned_hours)}h / 实际 ${escape(log.actual_hours)}h · ${escape({done:'完成',partial:'部分完成',blocked:'卡住',rest:'休息'}[log.status])}</p><p>${escape(log.goal)}</p><p>${escape(log.progress)}</p><p class="quiet">${escape(log.blocker)}</p><button type="button" class="text-button" data-growth-edit="${escape(log.contest_id)}" data-day="${escape(log.day)}">修改</button><button type="button" class="text-button" data-growth-delete="${escape(log.contest_id)}" data-day="${escape(log.day)}">删除</button></article>`).join('')||'<p class="quiet">还没有记录，先记下今天的实际进展。</p>';
+      $('#growth-history').innerHTML=logs.slice(-Number($('#growth-history-limit').value||30)).reverse().map(log=>`<article class="growth-entry"><strong>${escape(log.day)} · ${escape(catalog.find(c=>c.id===log.contest_id)?.short||log.contest_id)}</strong><p>计划 ${escape(log.planned_hours)}h / 实际 ${escape(log.actual_hours)}h · ${escape({done:'完成',partial:'部分完成',blocked:'卡住',rest:'休息'}[log.status])}</p><details><summary>记录详情</summary><p>${escape(log.goal)}</p><p>${escape(log.progress)}</p><p class="quiet">${escape(log.blocker)}</p></details><button type="button" class="text-button" data-growth-edit="${escape(log.contest_id)}" data-day="${escape(log.day)}">修改</button><button type="button" class="text-button" data-growth-delete="${escape(log.contest_id)}" data-day="${escape(log.day)}">删除</button></article>`).join('')||'<p class="quiet">还没有记录，先记下今天的实际进展。</p>';
       const total=logs.reduce((n,l)=>n+l.actual_hours,0),sources=new Set(logs.map(l=>l.contest_id)).size;
       $('#growth-stat-line').textContent=`累计 ${logs.length} 条记录 · ${sources} 个竞赛 · 实际投入 ${Math.round(total*100)/100} 小时`;
       const response=await fetch('/api/growth/summary',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contest_id:currentContest(),weekly_hours:budget(),logs:logs.slice(-120)})});
@@ -78,7 +78,7 @@
       const overview=document.querySelector('#growth-overview');
       if(overview){
         const blockers=[...new Set(logs.slice().reverse().map(l=>l.blocker).filter(Boolean))].slice(0,5);
-        overview.innerHTML=`<div class="growth-stat-grid"><article><strong>${sources}</strong><span>累计记录的竞赛</span></article><article><strong>${logs.length}</strong><span>每日记录</span></article><article><strong>${Math.round(total*100)/100}h</strong><span>累计实际投入</span></article><article><strong>${result.logged_days}</strong><span>近28天已记录日期</span></article></div><h3>训练节奏</h3><p>${escape(result.reason)}</p><p class="quiet">参考预算为每周 ${escape(result.requested_hours)} 小时。自报完成指数：${result.goal_completion_index===null?'暂无足够记录':Math.round(result.goal_completion_index*100)+'%'}，不代表成果验收通过率。</p><h3>练习过的内容</h3><div class="practice-topics">${result.practice_topics.length?result.practice_topics.map(t=>`<span class="tag">${escape(t.topic)} · ${t.recorded_days}天</span>`).join(''):'<p class="quiet">记录练习标签后可在这里回看。</p>'}</div><h3>近期卡点与下一步</h3>${blockers.length?'<ul>'+blockers.map(b=>`<li>${escape(b)}</li>`).join('')+'</ul>':'<p class="quiet">还没有记录卡点。</p>'}<p class="quiet">练习记录不代表已经掌握能力。下次生成计划时，可选择参考这些经历。</p>`;
+        overview.innerHTML=`<div class="growth-stat-grid"><article><strong>${sources}</strong><span>累计记录的竞赛</span></article><article><strong>${logs.length}</strong><span>每日记录</span></article><article><strong>${Math.round(total*100)/100}h</strong><span>累计实际投入</span></article><article><strong>${result.logged_days}</strong><span>近28天已记录日期</span></article></div><h3>训练节奏</h3><p>${escape(result.reason)}</p><p class="quiet">参考预算为每周 ${escape(result.requested_hours)} 小时。自报完成指数：${result.goal_completion_index===null?'暂无足够记录':Math.round(result.goal_completion_index*100)+'%'}，不代表成果验收通过率。</p><details class="fold-card"><summary>练习过的内容</summary><div class="practice-topics">${result.practice_topics.length?result.practice_topics.map(t=>`<span class="tag">${escape(t.topic)} · ${t.recorded_days}天</span>`).join(''):'<p class="quiet">记录练习标签后可在这里回看。</p>'}</div></details><details class="fold-card"><summary>近期卡点与下一步</summary>${blockers.length?'<ul>'+blockers.map(b=>`<li>${escape(b)}</li>`).join('')+'</ul>':'<p class="quiet">还没有记录卡点。</p>'}<p class="quiet">练习记录不代表已经掌握能力。下次生成计划时，可选择参考这些经历。</p></details>`;
       }
     }catch(e){if(version===summaryVersion)status(e.message);}
   }
@@ -89,7 +89,7 @@
   });
   mount.addEventListener('click',event=>{
     const edit=event.target.closest('[data-growth-edit]'),remove=event.target.closest('[data-growth-delete]');
-    try{if(edit){$('#growth-contest').value=edit.dataset.growthEdit;$('#growth-day').value=edit.dataset.day;populate();$('#growth-goal').focus();}
+    try{if(edit){$('#growth-contest').value=edit.dataset.growthEdit;$('#growth-day').value=edit.dataset.day;populate();$('#growth-form').closest('details').open=true;$('#growth-progress').focus();}
       if(remove&&confirm('删除这条成长记录？')){removeLog(remove.dataset.growthDelete,remove.dataset.day);status('已删除。');render();root.dispatchEvent(new Event('growth-memory-change'));}}catch(e){status(e.message);}
   });
   $('#growth-history-limit').addEventListener('change',render);

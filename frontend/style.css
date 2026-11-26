@@ -38,3 +38,85 @@
 @media(max-width:900px){.sidebar#app-sidebar{display:block;position:static;width:auto;padding:16px 20px;overflow:visible}.sidebar .brand small{display:none}.sidebar .app-nav{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:10px!important;margin-top:14px}.app-nav>.app-nav-main,.app-nav>.app-nav-group{flex:1;min-width:0}.app-nav-group>summary{padding:9px 12px!important}.app-nav-main{padding:9px 12px!important}.app-nav-sub{margin-left:5px;padding-left:5px}.sidebar .app-nav-sub>a{font-size:12px;padding:6px}.sidebar .joined-contests a{font-size:11px;padding:5px}.sidebar-caption{display:none}.growth-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.detail-page .chat-panel{top:24px;max-height:calc(100vh - 48px)}.workspace-tabs .daily-shortcut{margin-left:0}.workspace-tabs a{padding:7px 10px}.detail-page .workspace-grid{display:block}.home-page #profile{padding:24px}}
 
 #all-contest-list{margin-top:20px}#all-contest-list .recommend-card{display:flex;flex-direction:column}#all-contest-list .contest-actions{margin-top:auto;padding-top:14px}#all-contest-list label,#workspace-backup label{display:block;margin:14px 0 8px}#generation-preview{padding:20px;margin:18px 0;border:1px solid #b6cba8;background:#f2f7ed;border-radius:9px}#generation-preview>p{font-size:13px;line-height:1.8}#version-list select{margin:10px 0}#workspace-backup{border-top:1px solid var(--line);padding-top:16px;margin-top:24px}#backup-preview{padding:14px;background:#f1f6ec;margin-top:12px;border-radius:8px}#backup-preview input{width:auto;margin-right:8px}#backup-status{font-size:13px;line-height:1.8}#collect-week-logs{margin-bottom:10px}#discovery-tabs{margin-top:0}#discovery-filters{padding:18px 24px}.favorite-card button[data-archive]{color:#6c7250}
+
+#team-progress {
+  border: 0;
+  margin: 20px 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+#team-progress-title {
+  padding: 0;
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+#team-progress label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+#team-stage { width: min(100%, 200px); }
+#team-details label { margin-top: 14px; }
+
+#week-focus:has(#week-focus-list:empty) { display: none; }
+#plan:has(#all-weeks[hidden]) #export,
+#plan:has(#all-weeks[hidden]) #plan-settings > summary { display: none; }
+#plan-settings > summary, #all-weeks > summary, .plan-options > summary, #adjust-dates > summary {
+  cursor: pointer; color: var(--green); padding: 10px 0;
+}
+#all-weeks { border-top: 1px solid var(--line); }
+#week-focus .focus-task { justify-content: flex-start; gap: 12px; padding: 12px 0; }
+.focus-task input[type=checkbox] { width: 18px; height: 18px; flex: none; margin: 4px 0 0; }
+.focus-task label { font-weight: 600; cursor: pointer; }
+.focus-task p.quiet { margin: 3px 0; }
+#week-focus-list > button { margin-top: 14px; }
+#adjust-panel { margin-top: 16px; }
+#adjust-panel textarea { width: 100%; max-width: 100%; }
+#adjust-task-fields label, #adjust-dates label { display: block; margin: 12px 0 4px; }
+#plan-settings .budget-controls:has(#plan-start) {
+  display: grid; grid-template-columns: repeat(2,minmax(0,165px)); gap: 4px 12px;
+}
+#plan-settings label[for=plan-end] { grid-column: 2; grid-row: 1; }
+#date-range-summary { grid-column: 1 / -1; }
+#plan-settings .budget-controls input { width: 100%; min-width: 0; }
+
+.next-task h3 { margin: 4px 0 8px; font-size: clamp(18px,2vw,24px); line-height: 1.45; }
+.next-task .quiet { margin: 0; }
+.next-deliverable { max-width: 68ch; line-height: 1.65; margin: 8px 0 16px; }
+.upcoming-tasks { margin-top: 18px; border-top: 1px solid var(--line); padding: 12px 0 0; }
+.upcoming-tasks li { margin: 7px 0; }
+.contest-info summary,.upcoming-tasks summary { cursor: pointer; color: var(--green); }
+.detail-page header .eyebrow,.detail-page header h1 + p { display: none; }
+
+#manual-revision { margin-top: 18px; }
+#revision-result:not(:empty) { margin: 14px 0; }
+
+#review-entry { margin: 14px 0; }
+#review-entry > summary { color: var(--green); font-weight: 600; padding: 10px 0; cursor: pointer; }
+#submission-panel h2 { margin: 0 0 16px; }
+#review-entry .resource-fold { margin: 10px 0; }
+
+body { font-family: Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; line-height: 1.65; }
+main :is(h1,h2,h3) { text-wrap: pretty; line-height: 1.35; letter-spacing: -.015em; }
+main :is(p,li,label) { overflow-wrap: anywhere; }
+main p:not(.eyebrow) { letter-spacing: .012em; }
+main .quiet { line-height: 1.65; }
+main .panel { padding: clamp(18px,2.3vw,32px); }
+main :is(.fold-card,.resource-fold,#all-weeks,#plan-settings,#review-entry) > summary {
+  cursor: pointer; font-size: 15px; font-weight: 600; line-height: 1.5; color: var(--green);
+}
+main :is(.fold-card,.resource-fold) {
+  margin: 12px 0; padding: 0 14px; background: #f8faf8;
+  border: 1px solid var(--line); border-radius: 10px;
+}
+main :is(.fold-card,.resource-fold) > summary { padding: 12px 0; }
+main :is(.fold-card,.resource-fold)[open] { padding-bottom: 12px; }
+main summary:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.schedule-fields { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,155px),1fr)); gap: 12px; max-width: 620px; }
+.schedule-fields label { display: grid; gap: 5px; font-size: 14px; }
+.schedule-fields input { width: 100%; min-width: 0; }
+.next-task .fold-card { max-width: 68ch; }
+@media (max-width:600px) {
+ main .section-heading { flex-wrap: wrap; gap: 8px; }
+ .schedule-fields { grid-template-columns: 1fr; }
+}

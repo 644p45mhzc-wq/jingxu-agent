@@ -13,7 +13,10 @@ function render() {
   const query=$('#contest-search').value.trim().toLowerCase();
   const visible=contests.filter(c=>DisciplineFilters.matches(c,discipline)&&(!$('#favorite-only').checked||window.ContestLibrary?.isFavorite(c.id))&&(!query||[c.name,c.short,...c.tags,...(c.disciplines||[])].join(' ').toLowerCase().includes(query)));
   $('#contest-count').textContent=`${visible.length} / ${contests.length} 项赛事`;
-  $('#all-contest-list').innerHTML=visible.map(c=>`<article class="recommend-card"><h3>${esc(c.name)}</h3><p>${esc(c.fit_reason||c.description||'')}</p><a href="/competitions/${encodeURIComponent(c.id)}">查看赛事 →</a>${window.ContestLibrary?.controls(c.id)||''}</article>`).join('')||'<p class="quiet">没有匹配的赛事，试试其他关键词或切换“全部”。</p>';
+  const contestCard = c => `<article class="recommend-card"><h3>${esc(c.name)}</h3><p>${esc(c.fit_reason||c.description||'')}</p><a href="/competitions/${encodeURIComponent(c.id)}">查看赛事 →</a>${window.ContestLibrary?.controls(c.id)||''}</article>`;
+  $('#all-contest-list').innerHTML = visible.slice(0,6).map(contestCard).join('') || '<p class="quiet">没有匹配的赛事，试试其他关键词或切换“全部”。</p>';
+  $('#contest-overflow').hidden = visible.length <= 6;
+  $('#more-contest-list').innerHTML = visible.slice(6).map(contestCard).join('');
 
   const today = ProfileStore.today();
   const range = RegistrationTimeline.range(today);
@@ -64,7 +67,7 @@ function renderRecommendations() {
   const selected=ranked.filter(r=>r.score>0).slice(0,5);
   $('#recommend-note').textContent=`${profile.grade} · ${profile.major}：${selected.length?'以下方向与你的画像有相关基础。':'暂未匹配到明确方向，以下竞赛可作为探索起点。'}`;
   const stage=['大一','大二'].includes(profile.grade)?'建议先完成一个基础训练项目，再逐步挑战正式作品。':'建议结合已有课程或项目成果，明确作品与答辩准备。';
-  root.innerHTML=(selected.length?selected:ranked.slice(0,3)).map(({c,rule,matched,score},i)=>`<article class="recommend-card"><span class="tag">${score?`相关方向 ${i+1}`:'探索方向'} · ${esc(rule.focus)}</span><h3>${esc(c.name)}</h3><p>${score?`画像中的「${esc(matched.slice(0,3).join('、'))}」与该竞赛方向相关。`:'可从体验基础任务开始，判断自己是否感兴趣。'}</p><p class="quiet">${esc(rule.gap)} ${esc(stage)}</p><a href="/competitions/${encodeURIComponent(c.id)}">查看资料与训练计划 ↗</a>${window.ContestLibrary?.controls(c.id)||''}</article>`).join('');
+  root.innerHTML=(selected.length?selected:ranked.slice(0,3)).map(({c,rule,matched,score},i)=>`<article class="recommend-card"><span class="tag">${score?`相关方向 ${i+1}`:'探索方向'} · ${esc(rule.focus)}</span><h3>${esc(c.name)}</h3><p>${score?`画像中的「${esc(matched.slice(0,3).join('、'))}」与该竞赛方向相关。`:'可从体验基础任务开始，判断自己是否感兴趣。'}</p><details class="fold-card"><summary>备赛建议</summary><p>${esc(rule.gap)} ${esc(stage)}</p></details><a href="/competitions/${encodeURIComponent(c.id)}">查看资料与训练计划 ↗</a>${window.ContestLibrary?.controls(c.id)||''}</article>`).join('');
 }
 window.addEventListener('storage', e=>{if(e.key==='jingxu-profile-v1'){discipline=DisciplineFilters.infer(ProfileStore.load());render();renderRecommendations();}});
 

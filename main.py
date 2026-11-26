@@ -41,7 +41,13 @@ class Profile(BaseModel):
     grade: str = Field(min_length=1, max_length=30)
     skills: str = Field(min_length=1, max_length=500)
 
+class TeamProgress(BaseModel):
+    results: str = Field(default='', max_length=1200)
+    remaining: str = Field(default='', max_length=1200)
+
+
 class PlanRequest(Profile):
+    team_progress: TeamProgress | None = None
     start_date: date | None = None
     end_date: date | None = None
     growth_logs: list[DailyLog] = Field(default_factory=list, max_length=120)
@@ -259,6 +265,7 @@ async def plan(profile: PlanRequest, mode: Literal['ai', 'template'] = 'ai', con
         schedule['note'] += ' 跨竞赛记忆：' + memory['reason']
     if schedule.get('date_source') == 'user':
         schedule['week_budgets'] = date_windows(date.fromisoformat(schedule['start']), date.fromisoformat(schedule['end']), schedule['hours'])
+    team = profile.team_progress
     profile = PreparedProfile(**profile.model_dump(include={'major','grade','skills'}), hours=schedule['hours'], weeks=schedule['weeks'], start=schedule['start'])
     if mode == 'template':
         topics = contest['topics']
@@ -296,6 +303,9 @@ async def plan(profile: PlanRequest, mode: Literal['ai', 'template'] = 'ai', con
                           (' 附步骤拆解、现状记录与最小可运行/可展示基线。' if step == steps[0] else
                            ' 记录与前一版的差异，附至少2个练习或验证记录。' if step == steps[1] else
                            ' 附至少3项验收检查、修改前后对照与已知局限。'))
+            if index == 0 and team and (team.results or team.remaining):
+                action = '接续团队进度：' + (team.remaining or '核对已有成果，列出本阶段待补工作')
+                acceptance = ('基于已有成果：' + team.results[:160] + '。' if team.results else '') + '列出已完成和待完成部分，针对当前卡点提交本周新增成果与验证记录。'
             weeks.append(Week(title=title, tasks=[
                 Task(title=action[:150], deliverable=acceptance[:500], hours=main_hours, resource_ids=resource_ids),
                 Task(title=f'第{index+1}周：检查成果并修正一个主要问题', deliverable='依据本周交付物完成检查表，记录实际结果、一个问题及修正证据；未解决项明确标记。', hours=check_hours, resource_ids=resource_ids[:1]),
@@ -304,11 +314,80 @@ async def plan(profile: PlanRequest, mode: Literal['ai', 'template'] = 'ai', con
     prompt = f'''生成恰好 {profile.weeks} 周的个性化备赛计划，每周任务总工时不超过 {profile.hours} 小时。
 返回 JSON：{{"summary":"适配理由、能力缺口和待核实事项","weeks":[{{"title":"阶段名称","tasks":[{{"title":"具体任务","deliverable":"交付物及验收标准","hours":2,"resource_ids":["official"]}}]}}]}}。
 每周 1～5 项任务，每项工时为正数，只使用已有资源 ID，不输出 URL。若系统训练安排有week_budgets，每周严格遵守对应hours；最后不足一周的预算已按天数折算，不能使用完整周预算。阶段应逐步递进，结合用户基础安排任务。若系统训练安排含growth_memory，参考其近期实际成果与阻碍：把已练习的通用能力安排为短诊断再衔接当前竞赛，反复卡点先补基础；不要把自报完成当作能力认证，不得跳过新竞赛的专项要求。每周必须有不同的具体练习或迭代目标，不能重复同一任务；交付物包含可检查的验收标准和与上周成果的衔接。'''
+    if team and (team.results or team.remaining):
+        prompt += '\n以下 JSON 是团队自述的当前竞赛进度。衔接已有成果，优先安排剩余工作与卡点，避免重复安排已完成部分。自述不等于验收通过。\n' + team.model_dump_json()
     raw = await deepseek([{'role': 'system', 'content': context(profile, contest_id, schedule)}, {'role': 'user', 'content': prompt}], True)
     try:
         return finalize(GeneratedPlan.model_validate_json(raw), profile, 'ai', contest_id, schedule)
     except ValueError:
         raise HTTPException(502, 'AI 计划未通过周数或工时校验，请重新生成；原计划保持不变。')
+
+
+class RevisionRequest(BaseModel):
+    plan: ExistingPlan
+    completed: dict[str, bool]
+    feedback: str = Field(min_length=1, max_length=1500, pattern=r'\S')
+    team: TeamProgress | None = None
+    language: Literal['en', 'zh-CN'] = 'zh-CN'
+
+
+class RevisionEdit(BaseModel):
+    task_id: str = Field(max_length=100)
+    week: int = Field(ge=1, le=64)
+    title: str = Field(min_length=1, max_length=150)
+    deliverable: str = Field(min_length=1, max_length=500)
+    hours: float = Field(gt=0, le=40, allow_inf_nan=False)
+
+
+class RevisionProposal(BaseModel):
+    reason: str = Field(min_length=1, max_length=1000)
+    edits: list[RevisionEdit] = Field(max_length=100)
+
+
+@app.post('/api/plan/revise')
+async def revise_plan(body: RevisionRequest):
+    import json
+    get_contest(body.plan.contest_id)
+    original = body.plan.model_dump(mode='json')
+    weeks = original['weeks']
+    budget = float((original.get('schedule') or {}).get('hours') or 6)
+    slots = {t['id']: (i, t) for i, w in enumerate(weeks) for t in w['tasks']}
+    caps = [max(sum(t['hours'] for t in w['tasks']),
+                round(budget * min(7, (week.end-week.start).days+1) / 7, 2))
+            for w, week in zip(weeks, body.plan.weeks)]
+    context = {'feedback': body.feedback, 'language': body.language, 'team': body.team.model_dump() if body.team else None,
+               'weeks': [dict(week=i+1, start=w['start'], end=w['end'], hours_limit=caps[i],
+                              locked=w.get('history', False), tasks=[dict(id=t['id'], title=t['title'], deliverable=t['deliverable'],
+                              hours=t['hours'], done=bool(body.completed.get(t['id']))) for t in w['tasks']]) for i,w in enumerate(weeks)]}
+    prompt = ('根据用户对备赛计划的反馈给出最少必要的修改，使用指定语言。保持已完成任务与历史周不变。'
+              '可以修改未完成任务的内容、交付物、工时、所在周。每周总工时不可超过hours_limit。'
+              '返回JSON对象：reason解释怎样解决用户的问题，edits只列实际改变的任务，每项含task_id、week(从1开始)、title、deliverable、hours。'
+              '不增加或删除任务。如果反馈不明确或要求超出这些操作，返回空edits并在reason中说明需要补充什么。')
+    raw = await deepseek([{'role':'system','content':prompt},{'role':'user','content':json.dumps(context,ensure_ascii=False)}], True)
+    try:
+        proposal = RevisionProposal.model_validate_json(raw)
+        changes, seen, moves = [], set(), []
+        for edit in proposal.edits:
+            src, task = slots[edit.task_id]
+            dst = edit.week-1
+            if edit.task_id in seen or body.completed.get(edit.task_id) or weeks[src].get('history') or weeks[dst].get('history'):
+                raise ValueError('invalid task')
+            seen.add(edit.task_id)
+            new = edit.model_dump(include={'title','deliverable','hours'})
+            if src == dst and all(task[k] == v for k,v in new.items()):
+                continue
+            changes.append(dict(before={k:task[k] for k in new}, after=new, old_week=src+1, new_week=dst+1))
+            task.update(new)
+            if src != dst:
+                weeks[src]['tasks'].remove(task)
+                moves.append((dst, task))
+        for dst, task in moves:
+            weeks[dst]['tasks'].append(task)
+        if any(sum(t['hours'] for t in w['tasks']) > cap+1e-6 for w,cap in zip(weeks,caps)):
+            raise ValueError('weekly capacity exceeded')
+    except (ValueError,KeyError,IndexError) as exc:
+        raise HTTPException(502,'方案未通过任务或每周工时校验，请重试或补充你的时间限制。') from exc
+    return dict(plan=original, completed=body.completed, reason=proposal.reason, changes=changes)
 
 
 @app.post('/api/plan/adjust')

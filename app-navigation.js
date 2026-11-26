@@ -1,5 +1,6 @@
 (function(root){
  const sidebar=document.querySelector('#app-sidebar');if(!sidebar)return;
+ const languageSwitch = document.querySelector('#app-sidebar #language-switch');
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const detail=location.pathname.startsWith('/competitions/'),current=detail?decodeURIComponent(location.pathname.split('/').filter(Boolean).pop()):null;
  let catalog=[],coach=false,knownJoined=0;
@@ -10,6 +11,7 @@
   const joined=catalog.filter(c=>root.ContestLibrary?.isParticipating(c.id));
   const newlyJoined=joined.length>knownJoined;knownJoined=joined.length;
   sidebar.innerHTML=`<a class="brand" href="/">竞<span>序</span><small>备赛，有迹可循</small></a><nav class="app-nav" aria-label="主导航"><a class="app-nav-main ${active==='discover'?'active':''}" href="/" ${active==='discover'?'aria-current="page"':''}>发现适合你的竞赛</a><details class="app-nav-group" ${active==='preparation'||newlyJoined?'open':''}><summary class="${active==='preparation'?'active':''}">备赛</summary><div class="app-nav-sub"><a href="/#plan-calendar" ${!detail&&homeView(location.hash)==='calendar'?'class="active" aria-current="page"':''}>总日历</a><a href="/#participating" ${!detail&&homeView(location.hash)==='participating'?'class="active" aria-current="page"':''}>正在参加比赛</a><div class="joined-contests">${joined.length?joined.map(c=>`<a href="/competitions/${encodeURIComponent(c.id)}" class="${c.id===current?'active':''}" ${c.id===current?'aria-current="page"':''}>${esc(c.short)}</a>`).join(''):'<span class="quiet nav-empty">选择参加比赛后显示子目录</span>'}</div></div></details><details class="app-nav-group" ${active==='growth'?'open':''}><summary class="${active==='growth'?'active':''}">成长</summary><div class="app-nav-sub">${[['profile','我的画像'],['growth-memory','每日记录'],['growth-summary','成长总结']].map(([id,label])=>`<a href="/#${id}" ${!detail&&location.hash===`#${id}`?'class="active" aria-current="page"':''}>${label}</a>`).join('')}</div></details></nav><p class="sidebar-caption">从选择比赛，到记录成长。</p>`;
+  if (languageSwitch && sidebar.append) sidebar.append(languageSwitch);
  }
  function setVisible(id,visible){const el=document.getElementById(id);if(el)el.hidden=!visible;}
  function sync(){
