@@ -18,6 +18,9 @@ function setup(detail=false){
  const h=setup();await new Promise(resolve=>setImmediate(resolve));
  assert(h.node('#app-sidebar').innerHTML.includes('总日历'));
  assert(h.node('#app-sidebar').innerHTML.includes('正在参加比赛'));
+ assert(h.node('#app-sidebar').innerHTML.includes('aria-controls="app-main-nav"'));
+ h.node('#app-menu-toggle').handlers.click();
+ assert.equal(h.node('#app-menu-toggle').attributes['aria-expanded'],'true');
  assert(!h.node('#app-sidebar').innerHTML.includes('href="/competitions/cumcm"'));
  assert.equal(h.node('all-contests').hidden,false);assert.equal(h.node('annual-timeline').hidden,true);assert.equal(h.node('profile').hidden,true);
  h.click('participate','cumcm');
@@ -26,7 +29,7 @@ function setup(detail=false){
  assert(!h.node('#app-sidebar').innerHTML.includes('href="/competitions/innovation"'));
  assert.deepEqual(JSON.parse(h.store.get('jingxu-library-v1')).favorites,['cumcm']);
  assert.equal(JSON.parse(h.store.get('jingxu-library-v1')).otherSetting,'keep');
- h.route('#plan-calendar');assert.equal(h.node('plan-calendar').hidden,false);assert.equal(h.node('annual-timeline').hidden,true);
+ h.route('#plan-calendar');assert(h.node('#app-sidebar').innerHTML.includes('aria-expanded="false"'));assert.equal(h.node('plan-calendar').hidden,false);assert.equal(h.node('annual-timeline').hidden,true);
  h.route('#profile');assert.equal(h.node('profile').hidden,false);assert.equal(h.node('plan-calendar').hidden,true);
  h.route('#growth-summary');assert.equal(h.node('growth-summary').hidden,false);assert.equal(h.node('growth-memory').hidden,true);
  h.route('#growth-memory');assert.equal(h.node('growth-memory').hidden,false);assert.equal(h.node('growth-summary').hidden,true);

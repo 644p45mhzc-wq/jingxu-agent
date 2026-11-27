@@ -138,3 +138,62 @@ main :is(.recommend-card,.favorite-card,.calendar-agenda-card,.resource-fold,.fo
 main :is(.recommend-card,.favorite-card),
 main .panel :is(.resource-fold,.fold-card) { background-color: var(--detail-bg); }
 main .panel :is(.resource-fold,.fold-card) > summary { font-weight: 600; }
+
+/* Navigation and discovery polish: keep the first useful action in view on small screens. */
+.app-menu-toggle { display: none; }
+.home-page .workspace-tabs, .detail-page .workspace-tabs { margin-bottom: 18px; }
+.home-page #discovery-filters { padding-block: 16px; }
+.home-page #discovery-filters .discipline-filters { margin: 0 0 10px; }
+.home-page #discovery-filters .discipline-filters button { padding: 7px 14px; border-radius: 8px; font-size: .875rem; }
+.home-page #discovery-filters .favorites-toggle { margin: 0; }
+.home-page #discovery-filters #discipline-note { margin: 6px 0 0; }
+.home-page .contest-search-row { display: flex; align-items: center; gap: 12px; }
+.home-page .contest-search-row input { flex: 1; }
+.home-page .contest-search-row button { flex: none; padding: 8px; }
+.home-page #all-contest-list .recommend-card { gap: 8px; padding: 20px; }
+.home-page #all-contest-list .recommend-card h3 { margin: 0; }
+.home-page #all-contest-list .recommend-card p { margin: 0; }
+.home-page #all-contest-list .recommend-card > a { margin-top: auto; padding-top: 4px; }
+.home-page #all-contest-list .contest-actions { margin-top: 0; padding-top: 5px; }
+.home-page .profile-cta, .detail-page .profile-prompt .primary { display: inline-flex; align-items: center; width: fit-content; text-decoration: none; }
+.home-page .profile-cta { margin: 8px 0 18px; }
+.detail-page .profile-prompt { padding: 16px 18px; margin: 8px 0 18px; border: 1px solid #c6dbc2; background: #f2f7ee; border-radius: 10px; }
+.detail-page .profile-prompt strong { display: block; margin-bottom: 4px; }
+.detail-page .profile-prompt p { margin-bottom: 12px; }
+
+@media (max-width: 900px) {
+  .sidebar#app-sidebar { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0 12px; padding: 12px 22px; overflow: visible; }
+  #app-sidebar .brand { grid-column: 1; font-size: 23px; }
+  #app-sidebar .app-menu-toggle { display: inline-flex; align-items: center; justify-content: center; grid-column: 2; min-height: 40px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--green); font-weight: 600; }
+  #app-sidebar .app-menu-toggle::before { content: '☰'; margin-right: 8px; font-size: 16px; }
+  #app-sidebar .app-nav { grid-column: 1 / -1; flex-direction: column!important; margin: 12px 0 0; gap: 2px!important; }
+  #app-sidebar .app-nav > * { width: 100%; }
+  #app-sidebar .app-nav-sub { margin: 4px 0 8px 18px; }
+  #app-sidebar #language-switch, #app-sidebar .support-links { grid-column: 1 / -1; }
+  #app-sidebar #language-switch { margin: 8px 0 0; }
+  #app-sidebar .support-links { margin: 10px 0 0; padding-top: 8px; }
+  #app-sidebar:not(.menu-open) :is(.app-nav, #language-switch, .support-links) { display: none!important; }
+  .home-page main, .detail-page main { padding-top: 22px; }
+}
+@media (max-width: 600px) {
+  .sidebar#app-sidebar { padding: 10px 16px; }
+  .home-page main, .detail-page main { padding: 16px; }
+  .home-page .page-banner, .detail-page .contest-card.page-banner { padding: 20px; }
+  .home-page .workspace-tabs, .detail-page .workspace-tabs { flex-wrap: nowrap; gap: 4px; overflow-x: auto; margin: 12px -16px 16px; padding: 0 16px 10px; scrollbar-width: thin; }
+  .home-page .workspace-tabs a, .detail-page .workspace-tabs a { flex: none; white-space: nowrap; padding: 8px 11px; }
+  .detail-page .workspace-tabs .daily-shortcut { margin-left: 0; }
+  .detail-page .workspace-tabs #coach-toggle { flex: none; white-space: nowrap; }
+  .home-page #discovery-filters { padding: 14px; }
+  .home-page #discovery-filters .discipline-filters { gap: 6px; }
+  .home-page #discovery-filters .discipline-filters button { padding: 7px 11px; }
+  .home-page .contest-search-row { align-items: stretch; }
+  .home-page .contest-search-row button { max-width: 88px; }
+  .home-page #all-contest-list .recommend-card { padding: 16px; }
+  .home-page #all-contest-list .contest-actions button { min-height: 40px; }
+  .home-page .form-grid { grid-template-columns: 1fr; }
+  .home-page .form-grid .wide { grid-column: auto; }
+  .detail-page .chat-panel { right: 12px; width: calc(100vw - 24px); }
+}
+@media (max-width: 1150px) {
+  .home-page #contest-count { display: inline; font-size: .8rem; }
+}

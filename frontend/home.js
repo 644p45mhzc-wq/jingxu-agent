@@ -13,6 +13,7 @@ function render() {
   const query=$('#contest-search').value.trim().toLowerCase();
   const visible=contests.filter(c=>DisciplineFilters.matches(c,discipline)&&(!$('#favorite-only').checked||window.ContestLibrary?.isFavorite(c.id))&&(!query||[c.name,c.short,...c.tags,...(c.disciplines||[])].join(' ').toLowerCase().includes(query)));
   $('#contest-count').textContent=`${visible.length} / ${contests.length} 项赛事`;
+  $('#clear-contest-filters').hidden=!(query || discipline!=='全部' || $('#favorite-only').checked);
   const contestCard = c => `<article class="recommend-card"><h3>${esc(c.name)}</h3><p>${esc(c.fit_reason||c.description||'')}</p><a href="/competitions/${encodeURIComponent(c.id)}">查看赛事 →</a>${window.ContestLibrary?.controls(c.id)||''}</article>`;
   $('#all-contest-list').innerHTML = visible.slice(0,6).map(contestCard).join('') || '<p class="quiet">没有匹配的赛事，试试其他关键词或切换“全部”。</p>';
   $('#contest-overflow').hidden = visible.length <= 6;
@@ -56,6 +57,7 @@ const recommendationRules = {
 function renderRecommendations() {
   const root=$('#recommend-list');let profile;
   try {profile=ProfileStore.load();} catch {profile=null;}
+  $('#recommend-profile-cta').hidden=Boolean(profile);
   if(!profile) {root.innerHTML='';$('#recommend-note').textContent='保存专业、年级和能力后，即可查看适配建议。';return;}
   if(!contests.length) {root.innerHTML='';$('#recommend-note').textContent='竞赛资料尚未加载，请刷新后再试。';return;}
   const major=String(profile.major||'').toLowerCase(),skills=String(profile.skills||'').toLowerCase();
@@ -79,3 +81,5 @@ $('#favorite-only').addEventListener('change',render);
 window.addEventListener('contest-library-change',render);
 
 $('#contest-search').addEventListener('input',render);
+
+$('#clear-contest-filters').addEventListener('click',()=>{discipline='全部';$('#favorite-only').checked=false;$('#contest-search').value='';try{localStorage.removeItem('jingxu-discipline-v1');}catch{}render();$('#contest-search').focus();});

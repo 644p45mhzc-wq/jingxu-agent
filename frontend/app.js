@@ -53,6 +53,9 @@ function notify(text) { const box = $('#notice'); box.textContent = text; box.hi
 function profile() { return sharedProfile; }
 function refreshProfile() {
   try { sharedProfile = ProfileStore.load(); } catch { sharedProfile = null; }
+  $('#profile-prompt').hidden=Boolean(sharedProfile);
+  $('.profile-edit').hidden=!sharedProfile;
+  $('#profile-summary').hidden=!sharedProfile;
   $('#profile-summary').textContent = sharedProfile ? `${sharedProfile.grade} · ${sharedProfile.major}\n能力：${sharedProfile.skills}` : '还没有填写画像，请先到首页填写并保存。';
   return Boolean(sharedProfile);
 }
