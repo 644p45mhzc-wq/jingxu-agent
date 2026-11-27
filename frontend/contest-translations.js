@@ -143,10 +143,10 @@
     "zhReason": "适合有生物学基础、导师和实验条件的研究团队。"
   },
   "medical-innovation": {
-    "name": "China Belt and Road International Undergraduate Medical Innovation Competition",
+    "name": "National Undergraduate Medical Innovation Competition and the Belt and Road International Competition",
     "short": "Medical Innovation",
     "reason": "For students doing medical research or experimental design under a supervisor.",
-    "sourceKind": "institution",
+    "sourceKind": "working",
     "source": "https://ism.zju.edu.cn/2026/0304/c89548a3137455/page.htm",
     "zhName": "全国大学生医学创新大赛暨“一带一路”国际竞赛",
     "zhShort": "医学创新大赛",

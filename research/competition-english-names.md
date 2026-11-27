@@ -18,6 +18,6 @@
 | mechanical-design | National College Student Mechanical Innovation Design Competition (Regular Track) | 高校英文通知的比赛名称 + 本站补充常规赛说明 | https://sgim.sztu.edu.cn/en/info/1319/1402.htm |
 | biomedical-design | National College Student Biomedical Engineering Innovation Design Competition | 工作译名 | https://www.bmedesign.cn/ |
 | life-science | National Undergraduate Life Science Competition (Scientific Exploration) | 高校使用竞赛英文简称 NULSC；本站补充赛道，完整译名待主办方确认 | https://www.culsc.cn/ |
-| medical-innovation | China Belt and Road International Undergraduate Medical Innovation Competition | 高校英文通知使用名称（聚焦“一带一路”国际赛，国内赛完整英文名称待确认） | https://ism.zju.edu.cn/2026/0304/c89548a3137455/page.htm |
+| medical-innovation | National Undergraduate Medical Innovation Competition and the Belt and Road International Competition | 工作译名，涵盖国内赛与国际赛两部分；高校英文通知只确认国际赛称谓 | https://ism.zju.edu.cn/2026/0304/c89548a3137455/page.htm |
 
 **注意**：各高校报道的英文名称不一定是主办方制定的唯一正式译名。若后续找到主办方发布的不同英文名，请更新该条、来源和对应的前端回归测试。
