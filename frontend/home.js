@@ -11,7 +11,7 @@ document.querySelectorAll('[data-discipline]').forEach(b=>b.addEventListener('cl
 function render() {
   filterControls();
   const query=$('#contest-search').value.trim().toLowerCase();
-  const visible=contests.filter(c=>DisciplineFilters.matches(c,discipline)&&(!$('#favorite-only').checked||window.ContestLibrary?.isFavorite(c.id))&&(!query||[c.name,c.short,...c.tags,...(c.disciplines||[])].join(' ').toLowerCase().includes(query)));
+  const visible=contests.filter(c=>DisciplineFilters.matches(c,discipline)&&(!$('#favorite-only').checked||window.ContestLibrary?.isFavorite(c.id))&&(!query||[c.name,c.short,...c.tags,...(c.disciplines||[]),window.ContestTranslations?.searchText(c.id)||''].join(' ').toLowerCase().includes(query)));
   $('#contest-count').textContent=`${visible.length} / ${contests.length} 项赛事`;
   $('#clear-contest-filters').hidden=!(query || discipline!=='全部' || $('#favorite-only').checked);
   const contestCard = c => `<article class="recommend-card"><h3>${esc(c.name)}</h3><p>${esc(c.fit_reason||c.description||'')}</p><a href="/competitions/${encodeURIComponent(c.id)}">查看赛事 →</a>${window.ContestLibrary?.controls(c.id)||''}</article>`;

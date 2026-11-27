@@ -282,6 +282,13 @@ const interfaceEnglish = {"竞序 · 发现大学生竞赛":"Jingxu · Discover 
 
   function translated(text) {
     if (Object.hasOwn(interfaceEnglish, text)) return interfaceEnglish[text];
+    const contestName = window.ContestTranslations?.translate(text);
+    if (contestName) return contestName;
+    // Detail-page document titles are composed after the contest API loads.
+    if (text.endsWith(' · 竞序')) {
+      const name = window.ContestTranslations?.translate(text.slice(0, -5));
+      if (name) return `${name} · Jingxu`;
+    }
     if (/^\d+ \/ \d+ 项赛事$/.test(text)) return text.replace('项赛事', 'competitions');
     const field = /^(全部方向|跨专业赛事|([文理医工])类相关赛事) · 可随时切换；相关方向不等于参赛资格。$/.exec(text);
     if (field) return (interfaceEnglish[field[2]] || (field[1] === '全部方向' ? 'All disciplines' : 'Interdisciplinary')) + ' · Check official eligibility requirements.';
